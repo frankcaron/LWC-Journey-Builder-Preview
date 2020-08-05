@@ -21,7 +21,10 @@
     margin-bottom: 1em;
 }
 
-.journey-trailer {
+.journey-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    overflow: scroll;
 }
 
 /* ======================== */
@@ -52,7 +55,6 @@
     font-style: italic;
 }
 
-/* End Cap */
 .journey-end {
     margin-top: 0em;
     margin-bottom: 1em;
@@ -103,14 +105,15 @@
     align-items: center;
     height: 5em;
 }
+
 .journey-event-description {
     margin-top: 0.4em;
     padding: 0.2.em;
     text-align: center;
 }
-.journey-event-description .slds-text-body_regular {
+.smalltext {
     margin-top: 0.4em;
-    font-size: 0.2em;
+    font-size: 0.1em;
 }
 
 .journey-connector-line {

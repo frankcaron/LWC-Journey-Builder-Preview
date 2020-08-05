@@ -16,18 +16,13 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         //Set up variables
         let jsonSpec = this.getJsonSpec();
-        
-        //Debug 
-        //console.log(jsonSpec);
-        //console.log(jsonSpec.name);
 
-        //Set core
+        //Set top level variables
         this.journeyId = jsonSpec.id;
         this.journeyMid = jsonSpec.key;
         this.journeyURL = this.getJourneyURL(jsonSpec.key);
 
-
-        //---- Create HTML elements ----- 
+        //---- Create HTML Canvas elements ----- 
 
         //Journey Header
         let journeyHeaderCard = '';
@@ -36,77 +31,25 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         journeyHeaderCard += `<div class="journey-description">${jsonSpec.description}</div>`;
         journeyHeaderCard += `</div>`;
 
+        //Journey Canvas
+        let journeyCanvas = '<canvas class="journey-canvas"></canvas>';
+
         //Journey Footer
         let journeyFooterCard = '';
         journeyFooterCard += `<div class="journey-footer">`;
         journeyFooterCard += `<div class="journey-footer-content">Last updated ${jsonSpec.modifiedDate}</div>`;
         journeyFooterCard += `</div>`;
 
-        //Journey Grid
-        let journeyGrid = '';
-        journeyGrid += '<div class="slds-container_fluid">';
-        journeyGrid += '<div class="slds-grid slds-gutters journey-grid">';
-
-        //Journey Entry Event
-        journeyGrid += '<div class="slds-col">';
-        journeyGrid += '<div class="journey-entry">';
-        journeyGrid += '<div class="journey-event-label">Entry</div>';
-        journeyGrid += '<div class="journey-event-description">';
-        journeyGrid += `<div class="slds-text-body_regular"><strong>Name</strong>:<br /> ${jsonSpec.triggers[0].key}</div>`;
-        journeyGrid += `<div class="slds-text-body_regular"><strong>Key</strong>:<br /> ${jsonSpec.triggers[0].name}</div>`;
-        journeyGrid += '</div></div></div>';
-
-        //Journey Activities
-        let journeyActivities = jsonSpec.activities;
-        let activitySet = new Set();
-        let journeyEndPoints = new Set();
-
-        //iterate through 'next' keys; add to set
-        for (const activity of journeyActivities) {
-            activitySet.add(activity);
-        }
-        console.log(activitySet);
-
-        //Find the "end" activities, which have no outcomes
-        for (let activity of activitySet) {
-            if (!activity.outcomes) {
-                journeyEndPoints.add(activity);
-            }
-        }
-        console.log(journeyEndPoints);
-
-        //Draw the end points
-        journeyGrid += '<div class="slds-col">';
-        for (let activity of journeyEndPoints) {
-
-            //Create the activity for the last activity in the chain
-            journeyGrid += `<div class="journey-activity ${activity.key}">`;
-            journeyGrid += '<div class="journey-event-label">Activity</div>';
-            journeyGrid += '<div class="journey-event-description">';
-            journeyGrid += `<div class="slds-text-body_regular"><strong>Name</strong>:<br /> ${activity.key}</div>`;
-            journeyGrid += `<div class="slds-text-body_regular"><strong>Key</strong>:<br /> ${activity.name}</div>`;
-            journeyGrid += '</div></div>';
-
-            //Add Connector line for each
-            journeyGrid += `<div class="journey-connector-line ${activity.key}"></div>`
-        }
-        journeyGrid += '</div>';
-
-        //Journey Grid End
-        journeyGrid += '</div></div>';
-
         //---- Modify DOM ----- 
-        let journeyContainer = this.template.querySelectorAll(`[class*="journey-holder"]`);
-        journeyContainer[0].innerHTML = journeyHeaderCard;
-        journeyContainer[0].innerHTML += journeyGrid;
-        journeyContainer[0].innerHTML += journeyFooterCard;
+        let journeyContainer = this.template.querySelectorAll(`[class*="journey-holder"]`)[0];
+        journeyContainer.innerHTML = journeyHeaderCard;
+        journeyContainer.innerHTML += journeyCanvas;
+        journeyContainer.innerHTML += journeyFooterCard;
 
-        //Draw Lines
-        this.drawConnector(
-            this.template.querySelectorAll(`[class*="journey-activity"]`)[0],
-            this.template.querySelectorAll(`[class*="journey-entry"]`)[0],
-            this.template.querySelectorAll(`[class*="journey-connector-line"]`)[0]
-        );
+        // ---- Draw Journey ---
+        let journeyCanvasObj = this.template.querySelectorAll(`[class*="journey-canvas"]`)[0];
+        this.drawJourney(journeyCanvasObj, jsonSpec);
+
     }
 
     // Function to retrieve spec from Marketing Cloud API
@@ -294,42 +237,64 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         });
     }
 
-    //Function to draw the connecting lines
-    drawConnector(from, to, line){
-        var fT = from.offsetTop  + from.offsetHeight/2;
-        var tT = to.offsetTop    + to.offsetHeight/2;
-        var fL = from.offsetLeft + from.offsetWidth/2;
-        var tL = to.offsetLeft   + to.offsetWidth/2;
+    //Function to draw Journey on Cnavs
+    drawJourney(canvas, jsonSpec){
+
+        //----------------------
+        //Initialize canvas
+        //----------------------
+
+        var ctx = canvas.getContext("2d");
+        canvas.style.width='100%';
+        canvas.style.height='100%';
+        canvas.width  = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        //----------------------
+        //Grab spec and start parsing it
+        //----------------------
+
+        //Entry Events
+        let journeyEntry = jsonSpec.triggers[0];
+
+        //Activities
+        let journeyActivities = jsonSpec.activities;
+        let activitySet = new Set();
+        for (const activity of journeyActivities) {
+            activitySet.add(activity);
+        }
+
+        //Exits
+        let journeyEndPoints = new Set();
+        for (let activity of activitySet) {
+            if (!activity.outcomes) {
+                journeyEndPoints.add(activity);
+            }
+        }
+
+        //----------------------
+        //Start Drawing
+        //----------------------
+
+        //Find Starting Point
+        let top = 0;
+        let left = 0;
+        let shapeSize = 20;
+
+        //Draw Entry Event
+        ctx.beginPath();
+        ctx.arc(left + shapeSize, top +shapeSize, shapeSize / 2, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#97cf66';
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#003300';
+        ctx.stroke();
         
-        var CA   = Math.abs(tT - fT);
-        var CO   = Math.abs(tL - fL);
-        var H    = Math.sqrt(CA*CA + CO*CO);
-        var ANG  = 180 / Math.PI * Math.acos( CA/H );
-      
-        if(tT > fT){
-            var top  = (tT-fT)/2 + fT;
-        }else{
-            var top  = (fT-tT)/2 + tT;
-        }
-        if(tL > fL){
-            var left = (tL-fL)/2 + fL;
-        }else{
-            var left = (fL-tL)/2 + tL;
-        }
-      
-        if(( fT < tT && fL < tL) || ( tT < fT && tL < fL) || (fT > tT && fL > tL) || (tT > fT && tL > fL)){
-          ANG *= -1;
-        }
-        top-= H/2;
-      
-        line.style["-webkit-transform"] = 'rotate('+ ANG +'deg)';
-        line.style["-moz-transform"] = 'rotate('+ ANG +'deg)';
-        line.style["-ms-transform"] = 'rotate('+ ANG +'deg)';
-        line.style["-o-transform"] = 'rotate('+ ANG +'deg)';
-        line.style["-transform"] = 'rotate('+ ANG +'deg)';
-        line.style.top    = top+'px';
-        line.style.left   = left+'px';
-        line.style.height = H + 'px';
+        //ctx.moveTo(0, 0);
+        //ctx.lineTo(canvas.width * 2, canvas.height / 2);
+        //ctx.stroke();
+
+
       }
 
 }
