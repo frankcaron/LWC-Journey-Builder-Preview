@@ -243,8 +243,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //----------------------
         //Initialize canvas
         //----------------------
-        let canvasWidth = 1280;
-        let canvasHeight = 720;
+        let canvasWidth = 2560;
+        let canvasHeight = 1440;
         canvas.style.width = canvasWidth + "px";
         canvas.style.height = canvasHeight + "px";  
 
@@ -309,6 +309,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         //Set counters
         let numShapes = 0;
+        let numPaths = 0;
 
         //----------------------
         //Draw Entry Event
@@ -366,7 +367,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         for (const exit of journeyEndPoints) {
 
             let nextEventX = left + shapeSize + (shapeSpacing * numShapes) ;
-            let nextEventY = (top + shapeSize) / 2;  
+            let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * numPaths;  
 
             this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
             canvasContext.fillStyle = activityEntryColor;
@@ -405,15 +406,15 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             canvasContext.font = fontBody;
             this.wrapText(canvasContext, exit.name, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
 
-            //Increment
-            numShapes++;
-
             //Draw Connector
             let start = { "x": nextEventX + shapeSize / 2, "y": nextEventY + shapeSize / 2 };
             let end = { "x": entryEventX, "y": entryEventY };
-            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth )
-        }
+            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
 
+            //Increment
+            numPaths++;
+            numShapes++;
+        }
       }
 
       // Function to wrap text in a box
