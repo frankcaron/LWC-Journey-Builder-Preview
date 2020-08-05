@@ -3,7 +3,12 @@
 /* ======================== */
 
 .padded {
-    padding: 1rem;
+    padding: 0rem;
+}
+
+.gray-id {
+    color: #666;
+    font-size: smaller;
 }
 
 /* ======================== */
@@ -14,8 +19,8 @@
     min-width: 50em;
     min-height: 30em;
     border: 1px solid #000;
-    margin: 1rem;
-    margin-bottom: 2rem;
+    margin-top: 0em;
+    margin-bottom: 1em;
 }
 
 /* ======================== */
@@ -34,7 +39,7 @@
     font-size: 1em;
 }
 
-/* Header */ 
+/* Footer */ 
 .journey-footer {
     padding: 2em;
     text-align: right;
@@ -43,4 +48,10 @@
     font-size: 0.5em;
     color: #666;
     font-style: italic;
+}
+
+/* End Cap */
+.journey-end {
+    margin-top: 0em;
+    margin-bottom: 1em;
 }
