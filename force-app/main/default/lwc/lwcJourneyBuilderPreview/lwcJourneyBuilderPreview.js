@@ -153,13 +153,29 @@ export default class LwcJourneyBuilderPreview extends LightningElement {
             ]
         };
         
-        let jsonSpecStubString = JSON.stringify(jsonSpecStub);
+        //Debug 
+        console.log(jsonSpecStub);
+        console.log(jsonSpecStub.name);
 
-        //Modify DOM
+        //---- Create HTML elements ----- 
+
+        //Journey Header
+        let journeyHeaderCard = '';
+        journeyHeaderCard += `<div class="journey-header">`;
+        journeyHeaderCard += `<div class="journey-title">${jsonSpecStub.name}</div>`;
+        journeyHeaderCard += `<div class="journey-description">${jsonSpecStub.description}</div>`;
+        journeyHeaderCard += `</div>`;
+
+        let journeyFooterCard = '';
+        journeyFooterCard += `<div class="journey-footer">`;
+        journeyFooterCard += `<div class="journey-footer-content">Last updated ${jsonSpecStub.modifiedDate}</div>`;
+        journeyFooterCard += `</div>`;
+
+        //---- Modify DOM ----- 
         let journeyContainer = this.template.querySelectorAll(`[class*="journey-holder"]`);
-        console.log(journeyContainer);
+        journeyContainer[0].innerHTML += journeyHeaderCard;
+        journeyContainer[0].innerHTML += journeyFooterCard;
 
-        journeyContainer[0].innerHTML = jsonSpecStubString;
     }
 
 

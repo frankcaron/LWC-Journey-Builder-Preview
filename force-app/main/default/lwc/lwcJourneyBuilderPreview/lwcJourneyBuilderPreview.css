@@ -1,3 +1,15 @@
+/* ======================== */
+/* Utility Classes */
+/* ======================== */
+
+.padded {
+    padding: 1rem;
+}
+
+/* ======================== */
+/* Container Classes */
+/* ======================== */
+
 .journey-render-container {
     min-width: 50em;
     min-height: 30em;
@@ -6,6 +18,29 @@
     margin-bottom: 2rem;
 }
 
-.padded {
-    padding: 1rem;
+/* ======================== */
+/* Journey Structure Classes */
+/* ======================== */
+
+/* Header */ 
+.journey-header {
+    padding: 2em;
+}
+.journey-title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+.journey-description{
+    font-size: 1em;
+}
+
+/* Header */ 
+.journey-footer {
+    padding: 2em;
+    text-align: right;
+}
+.journey-footer-content {
+    font-size: 0.5em;
+    color: #666;
+    font-style: italic;
 }
