@@ -3,6 +3,11 @@ import { NavigationMixin } from 'lightning/navigation';
 
 export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningElement) {
 
+    // Properties
+    @api
+    MarketingCloudOrg = '';
+
+    // Internal Vars
     journeyId = '';
     journeyMid = '';
     journeyURL = '';
@@ -31,16 +36,77 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         journeyHeaderCard += `<div class="journey-description">${jsonSpec.description}</div>`;
         journeyHeaderCard += `</div>`;
 
+        //Journey Footer
         let journeyFooterCard = '';
         journeyFooterCard += `<div class="journey-footer">`;
         journeyFooterCard += `<div class="journey-footer-content">Last updated ${jsonSpec.modifiedDate}</div>`;
         journeyFooterCard += `</div>`;
 
+        //Journey Grid
+        let journeyGrid = '';
+        journeyGrid += '<div class="slds-container_fluid">';
+        journeyGrid += '<div class="slds-grid slds-gutters journey-grid">';
+
+        //Journey Entry Event
+        journeyGrid += '<div class="slds-col">';
+        journeyGrid += '<div class="journey-entry">';
+        journeyGrid += '<div class="journey-event-label">Entry</div>';
+        journeyGrid += '<div class="journey-event-description">';
+        journeyGrid += `<div class="slds-text-body_regular"><strong>Name</strong>:<br /> ${jsonSpec.triggers[0].key}</div>`;
+        journeyGrid += `<div class="slds-text-body_regular"><strong>Key</strong>:<br /> ${jsonSpec.triggers[0].name}</div>`;
+        journeyGrid += '</div></div></div>';
+
+        //Journey Activities
+        let journeyActivities = jsonSpec.activities;
+        let activitySet = new Set();
+        let journeyEndPoints = new Set();
+
+        //iterate through 'next' keys; add to set
+        for (const activity of journeyActivities) {
+            activitySet.add(activity);
+        }
+        console.log(activitySet);
+
+        //Find the "end" activities, which have no outcomes
+        for (let activity of activitySet) {
+            if (!activity.outcomes) {
+                journeyEndPoints.add(activity);
+            }
+        }
+        console.log(journeyEndPoints);
+
+        //Draw the end points
+        journeyGrid += '<div class="slds-col">';
+        for (let activity of journeyEndPoints) {
+
+            //Create the activity for the last activity in the chain
+            journeyGrid += `<div class="journey-activity ${activity.key}">`;
+            journeyGrid += '<div class="journey-event-label">Activity</div>';
+            journeyGrid += '<div class="journey-event-description">';
+            journeyGrid += `<div class="slds-text-body_regular"><strong>Name</strong>:<br /> ${activity.key}</div>`;
+            journeyGrid += `<div class="slds-text-body_regular"><strong>Key</strong>:<br /> ${activity.name}</div>`;
+            journeyGrid += '</div></div>';
+
+            //Add Connector line for each
+            journeyGrid += `<div class="journey-connector-line ${activity.key}"></div>`
+        }
+        journeyGrid += '</div>';
+
+        //Journey Grid End
+        journeyGrid += '</div></div>';
+
         //---- Modify DOM ----- 
         let journeyContainer = this.template.querySelectorAll(`[class*="journey-holder"]`);
         journeyContainer[0].innerHTML = journeyHeaderCard;
+        journeyContainer[0].innerHTML += journeyGrid;
         journeyContainer[0].innerHTML += journeyFooterCard;
 
+        //Draw Lines
+        this.drawConnector(
+            this.template.querySelectorAll(`[class*="journey-activity"]`)[0],
+            this.template.querySelectorAll(`[class*="journey-entry"]`)[0],
+            this.template.querySelectorAll(`[class*="journey-connector-line"]`)[0]
+        );
     }
 
     // Function to retrieve spec from Marketing Cloud API
@@ -223,9 +289,47 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         this[NavigationMixin.Navigate]({
             "type": "standard__webPage",
             "attributes": {
-                "url": `"${this.journeyURL}"`
+                "url": this.journeyURL
             }
         });
     }
+
+    //Function to draw the connecting lines
+    drawConnector(from, to, line){
+        var fT = from.offsetTop  + from.offsetHeight/2;
+        var tT = to.offsetTop    + to.offsetHeight/2;
+        var fL = from.offsetLeft + from.offsetWidth/2;
+        var tL = to.offsetLeft   + to.offsetWidth/2;
+        
+        var CA   = Math.abs(tT - fT);
+        var CO   = Math.abs(tL - fL);
+        var H    = Math.sqrt(CA*CA + CO*CO);
+        var ANG  = 180 / Math.PI * Math.acos( CA/H );
+      
+        if(tT > fT){
+            var top  = (tT-fT)/2 + fT;
+        }else{
+            var top  = (fT-tT)/2 + tT;
+        }
+        if(tL > fL){
+            var left = (tL-fL)/2 + fL;
+        }else{
+            var left = (fL-tL)/2 + tL;
+        }
+      
+        if(( fT < tT && fL < tL) || ( tT < fT && tL < fL) || (fT > tT && fL > tL) || (tT > fT && tL > fL)){
+          ANG *= -1;
+        }
+        top-= H/2;
+      
+        line.style["-webkit-transform"] = 'rotate('+ ANG +'deg)';
+        line.style["-moz-transform"] = 'rotate('+ ANG +'deg)';
+        line.style["-ms-transform"] = 'rotate('+ ANG +'deg)';
+        line.style["-o-transform"] = 'rotate('+ ANG +'deg)';
+        line.style["-transform"] = 'rotate('+ ANG +'deg)';
+        line.style.top    = top+'px';
+        line.style.left   = left+'px';
+        line.style.height = H + 'px';
+      }
 
 }

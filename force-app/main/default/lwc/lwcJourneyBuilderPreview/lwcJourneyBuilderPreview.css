@@ -16,11 +16,12 @@
 /* ======================== */
 
 .journey-render-container {
-    min-width: 50em;
-    min-height: 30em;
     border: 1px solid #000;
     margin-top: 0em;
     margin-bottom: 1em;
+}
+
+.journey-trailer {
 }
 
 /* ======================== */
@@ -30,6 +31,7 @@
 /* Header */ 
 .journey-header {
     padding: 2em;
+    padding-bottom: 1em;
 }
 .journey-title {
     font-size: 1.5em;
@@ -54,4 +56,67 @@
 .journey-end {
     margin-top: 0em;
     margin-bottom: 1em;
+}
+
+/* Event and Activity Grid */
+.journey-grid {
+    margin-left: 2em;
+    margin-right: 2em;
+}
+
+.journey-entry {
+    width: 5em;
+    height: 5em;
+    background: #97cf66;
+    border-radius: 50%;
+    margin: 2em;
+    position: relative;
+    z-index: 5;
+}
+
+.journey-decision {
+    width: 5em;
+    height: 5em;
+    background: #ec8b23;
+    border-radius: 5%;
+}
+
+.journey-activity {
+    width: 5em;
+    height: 5em;
+    background: #52c7bc;
+    border-radius: 20%;
+    margin: 2em;
+    z-index: 5;
+    position: relative;
+    margin-bottom: 6em;
+}
+
+.journey-split {
+    background: #97a4b1;
+}
+
+.journey-event-label {
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 5em;
+}
+.journey-event-description {
+    margin-top: 0.4em;
+    padding: 0.2.em;
+    text-align: center;
+}
+.journey-event-description .slds-text-body_regular {
+    margin-top: 0.4em;
+    font-size: 0.2em;
+}
+
+.journey-connector-line {
+    position:absolute;
+    z-index: 1;
+    width: 1.5em;
+    margin-top: 4.5em;
+    background-color: rgb(222,222,222,0.75);
 }
