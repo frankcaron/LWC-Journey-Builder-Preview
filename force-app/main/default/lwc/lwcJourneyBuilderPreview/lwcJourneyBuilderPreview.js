@@ -243,12 +243,18 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //----------------------
         //Initialize canvas
         //----------------------
+        let canvasWidth = 1280;
+        let canvasHeight = 720;
+        canvas.style.width = canvasWidth + "px";
+        canvas.style.height = canvasHeight + "px";  
 
-        var ctx = canvas.getContext("2d");
-        canvas.style.width='100%';
-        canvas.style.height='100%';
-        canvas.width  = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        let scale = window.devicePixelRatio;
+        canvas.width = canvasWidth * scale;
+        canvas.height = canvasHeight * scale;
+
+        // Normalize coordinate system to use css pixels.
+        var canvasContext = canvas.getContext("2d");
+        canvasContext.scale(scale, scale);
 
         //----------------------
         //Grab spec and start parsing it
@@ -276,25 +282,232 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Start Drawing
         //----------------------
 
-        //Find Starting Point
-        let top = 0;
-        let left = 0;
-        let shapeSize = 20;
+        //Set constants
+        const top = 0;
+        const left = 0;
+        const shapeSize = 100;
+        const shapeSpacing = 200;
+        const shapeRounding = 20;
 
+        const fontMarginTop = 10;
+        const fontHeader = 'bold 17px Arial'
+        const fontBody = '15px Arial'
+        const fontColor = '#000';
+
+        const connectorColor = "#666";
+        const connectorWidth = 5;
+
+        const eventEntryColor = '#97cf66';
+        const activityEntryColor = '#52c7bc';
+
+        const descriptionWidth = 150;
+        const descriptionHeight = 150;
+        const descriptionPadding = 5;
+        const descriptionLineHeight = 20;
+        const descriptionFillColor = '#FFF'
+        const descriptionBorderColor = '#BBB'
+
+        //Set counters
+        let numShapes = 0;
+
+        //----------------------
         //Draw Entry Event
-        ctx.beginPath();
-        ctx.arc(left + shapeSize, top +shapeSize, shapeSize / 2, 0, 2 * Math.PI, false);
-        ctx.fillStyle = '#97cf66';
-        ctx.fill();
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = '#003300';
-        ctx.stroke();
+        //----------------------
         
-        //ctx.moveTo(0, 0);
-        //ctx.lineTo(canvas.width * 2, canvas.height / 2);
-        //ctx.stroke();
+        //Draw Entry Event
+        let entryEventX = left + shapeSize;
+        let entryEventY = top + shapeSize;
 
+        canvasContext.beginPath();
+        canvasContext.arc(entryEventX, entryEventY, shapeSize / 2, 0, 2 * Math.PI, false);
+        canvasContext.closePath();
+        canvasContext.fillStyle = eventEntryColor;
+        canvasContext.fill();
+        canvasContext.font = fontHeader;
+        canvasContext.fillStyle = fontColor;
+        canvasContext.textAlign = "center";
+        canvasContext.fillText("Entry", entryEventX, entryEventY + fontMarginTop);
+
+        //Draw Entry Event Box
+        let entryEventDescriptionX = entryEventX - descriptionWidth / 2;
+        let entryEventDescriptionY = entryEventY + descriptionHeight / 2 + descriptionPadding;
+
+        canvasContext.beginPath();
+        canvasContext.rect(entryEventDescriptionX, entryEventDescriptionY, descriptionWidth, descriptionHeight);
+        canvasContext.closePath();
+        canvasContext.fillStyle = descriptionFillColor;
+        canvasContext.fill();
+        canvasContext.lineWidth = 1;
+        canvasContext.strokeStyle = descriptionBorderColor;
+        canvasContext.stroke();
+
+        //Draw Entry Event Text
+        let entryEventDescriptionTextX = entryEventDescriptionX + descriptionWidth / 1.9;
+        let entryEventDescrtipionTextY = entryEventDescriptionY + descriptionLineHeight;
+
+        canvasContext.fillStyle = fontColor;
+        canvasContext.textAlign = "center";
+        canvasContext.font = fontHeader;
+        canvasContext.fillText("Name:", entryEventDescriptionTextX, entryEventDescrtipionTextY);
+        canvasContext.font = fontBody;
+        this.wrapText(canvasContext, journeyEntry.key, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+        canvasContext.font = fontHeader;
+        canvasContext.fillText("Description:", entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 3);
+        canvasContext.font = fontBody;
+        this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+           
+        //Increment
+        numShapes++;
+
+        //----------------------
+        // Draw Exit Events
+        //----------------------
+
+        for (const exit of journeyEndPoints) {
+
+            let nextEventX = left + shapeSize + (shapeSpacing * numShapes) ;
+            let nextEventY = (top + shapeSize) / 2;  
+
+            this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
+            canvasContext.fillStyle = activityEntryColor;
+            canvasContext.fill();
+            canvasContext.font = fontHeader;
+            canvasContext.fillStyle = fontColor;
+            canvasContext.textAlign = "center";
+            canvasContext.fillText("Activity", nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
+
+
+            //Draw Entry Event Box
+            let endpointEventDescriptionX = nextEventX - descriptionWidth / 5;
+            let endpointEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
+
+            canvasContext.beginPath();
+            canvasContext.rect(endpointEventDescriptionX, endpointEventDescriptionY, descriptionWidth, descriptionHeight);
+            canvasContext.closePath();
+            canvasContext.fillStyle = descriptionFillColor;
+            canvasContext.fill();
+            canvasContext.lineWidth = 1;
+            canvasContext.strokeStyle = descriptionBorderColor;
+            canvasContext.stroke();
+
+            //Draw Entry Event Text
+            let endpointEventDescriptionTextX = nextEventX + descriptionWidth / 3;
+            let endpointEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
+
+            canvasContext.fillStyle = fontColor;
+            canvasContext.textAlign = "center";
+            canvasContext.font = fontHeader;
+            canvasContext.fillText("Name:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY);
+            canvasContext.font = fontBody;
+            this.wrapText(canvasContext, exit.key, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+            canvasContext.font = fontHeader;
+            canvasContext.fillText("Description:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 3);
+            canvasContext.font = fontBody;
+            this.wrapText(canvasContext, exit.name, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+
+            //Increment
+            numShapes++;
+
+            //Draw Connector
+            let start = { "x": nextEventX + shapeSize / 2, "y": nextEventY + shapeSize / 2 };
+            let end = { "x": entryEventX, "y": entryEventY };
+            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth )
+        }
 
       }
+
+      // Function to wrap text in a box
+      wrapText(context, text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+
+        for(var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + ' ';
+          var metrics = context.measureText(testLine);
+          var testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            context.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+          }
+          else {
+            line = testLine;
+          }
+        }
+        context.fillText(line, x, y);
+      }
+
+     // Function to create a rounded rectangle
+     roundRect(ctx, x, y, width, height, radius) {
+        if (typeof radius == 'number') {
+          radius = {tl: radius, tr: radius, br: radius, bl: radius};
+          console.log(radius);
+        } else {
+          var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+          for (var side in defaultRadius) {
+            radius[side] = radius[side] || defaultRadius[side];
+          }
+        }
+        ctx.beginPath();
+        ctx.moveTo(x + radius.tl, y);
+        ctx.lineTo(x + width - radius.tr, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        ctx.lineTo(x + width, y + height - radius.br);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        ctx.lineTo(x + radius.bl, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        ctx.lineTo(x, y + radius.tl);
+        ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+        ctx.closePath();
+      
+      }
+
+      //Function to draw elbow connectors
+      drawElbow(ctx, type, start, end, cornerRadius, color, linewidth) {
+
+        //Draw behind shapes
+        ctx.globalCompositeOperation = 'destination-over';
+
+        // starting elbow
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+    
+        // middle elbow
+        switch (type) {
+            case "topLeft":
+                ctx.lineTo(start.x, end.y + cornerRadius);
+                ctx.quadraticCurveTo(
+                start.x, end.y,
+                start.x + cornerRadius, end.y);
+                break;
+            case "topRight":
+                ctx.lineTo(end.x - cornerRadius, start.y);
+                ctx.quadraticCurveTo(
+                end.x, start.y,
+                end.x, start.y + cornerRadius);
+                break;
+            case "bottomRight":
+                ctx.lineTo(start.x, end.y - cornerRadius);
+                ctx.quadraticCurveTo(
+                start.x, end.y,
+                start.x - cornerRadius, end.y);
+                break;
+            case "bottomLeft":
+                ctx.lineTo(end.x + cornerRadius, start.y);
+                ctx.quadraticCurveTo(
+                end.x, start.y,
+                end.x, start.y - cornerRadius);
+                break;
+        }
+    
+        // ending elbow
+        ctx.lineTo(end.x, end.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = linewidth;
+        ctx.stroke();
+
+        //Return to normal
+        ctx.globalCompositeOperation = 'source-over';
+    }
 
 }
