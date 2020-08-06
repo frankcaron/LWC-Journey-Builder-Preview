@@ -365,6 +365,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         const connectorColor = "#666";
         const connectorWidth = 5;
+        const connectorRadius = 12;
 
         const eventEntryColor = '#97cf66';
         const activityEntryColor = '#52c7bc';
@@ -588,6 +589,10 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         //Connector type
         let connectorType = "straight";
+        let currentBranchDown = 0;
+
+        //Clear Drawn items
+        drawnPathItems.clear();
 
         //For each path...
         for (let currentPath of drawPaths) { 
@@ -604,16 +609,46 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 let previousActivityX = eventList.get(previousActivityKey).x;
                 let previousActivityY = eventList.get(previousActivityKey).y;
 
+                let previousActivityType = currentPath[pathStep - 1].type;
+
+                console.log(drawnPathItems);
+
+                //Ensure we're not duplicating efforts, and if we are, move onto the next node
+                if (drawnPathItems.has(currentActivityKey)) { 
+                    console.log("Repeating a drawn activity, so skipping");
+                    continue; 
+                } else {
+                    drawnPathItems.set(currentActivityKey, currentPath[pathStep]);
+                }
+
                 //Debug
                 console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
 
-                // Draw Connector between the two
-                let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
-                let end = { "x": previousActivityX, "y": previousActivityY };
-                this.drawElbow(canvasContext, connectorType, start, end, 12, connectorColor, connectorWidth );
+                if (previousActivityType == "Event") {
+                    // Draw Elbow Connector between the two
+                    let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
+                    let end = { "x": previousActivityX, "y": previousActivityY };
+                    this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
+                    continue;
+                }
+
+                if (currentBranchDown >= 1) {
+                    // Draw Elbow Connector between the two
+                    let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
+                    let end = { "x": previousActivityX, "y": previousActivityY + shapeSize / 2 };
+                    this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
+                } else {
+                    // Draw Elbow Connector between the two
+                    let start = { "x": currentActivityX + shapeSize / 2, "y": currentyActivityY + shapeSize / 2};
+                    let end = { "x": previousActivityX, "y": previousActivityY + shapeSize / 2 };
+                    this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
+                }
+
+                
             }
 
             connectorType = "bottomLeft";
+            currentBranchDown++;
         }
 
       }
@@ -676,7 +711,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         // middle elbow
         switch (type) {
             case "straight":
-                ctx.lineTo(start.x, end.y);
+                ctx.lineTo(start.x, start.y);
                 break;
             case "topLeft":
                 ctx.lineTo(start.x, end.y + cornerRadius);
