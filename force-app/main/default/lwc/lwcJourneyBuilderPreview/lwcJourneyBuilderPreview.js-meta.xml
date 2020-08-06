@@ -7,12 +7,17 @@
         <target>lightning__RecordPage</target>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__FlowScreen">
             <property name="MarketingCloudOrg" type="String"  /> 
         </targetConfig>
         <targetConfig targets="lightning__RecordPage,lightning__AppPage, lightning__HomePage">
+            <property name="MarketingCloudOrg" type="String"  /> 
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
             <property name="MarketingCloudOrg" type="String"  /> 
         </targetConfig>
     </targetConfigs>
