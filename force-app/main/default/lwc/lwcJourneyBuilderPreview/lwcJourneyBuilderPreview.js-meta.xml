@@ -13,12 +13,15 @@
     <targetConfigs>
         <targetConfig targets="lightning__FlowScreen">
             <property name="MarketingCloudOrg" type="String"  /> 
+            <property name="journeyURL" type="String"  /> 
         </targetConfig>
         <targetConfig targets="lightning__RecordPage,lightning__AppPage, lightning__HomePage">
             <property name="MarketingCloudOrg" type="String"  /> 
+            <property name="journeyURL" type="String"  /> 
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
             <property name="MarketingCloudOrg" type="String"  /> 
+            <property name="journeyURL" type="String"  /> 
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

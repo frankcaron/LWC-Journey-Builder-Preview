@@ -7,10 +7,12 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     @api
     MarketingCloudOrg = '';
 
+    @api
+    journeyURL = ''
+
     // Internal Vars
     journeyId = '';
     journeyMid = '';
-    journeyURL = '';
     
     renderedCallback() {
 
@@ -20,7 +22,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Set top level variables
         this.journeyId = jsonSpec.id;
         this.journeyMid = jsonSpec.key;
-        this.journeyURL = this.getJourneyURL(jsonSpec.key);
+        this.journeyURL = this.getJourneyURL(jsonSpec.key, false);
 
         //---- Create HTML Canvas elements ----- 
 
@@ -220,11 +222,11 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         //If in test mode, return the hard-coded val
         if (testMode) {
-         return "https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23a7da3796-d2d7-497b-a89f-6e77754912e8/7";
+         return "https://www.google.com";
         }
 
         //Otherwise, return the real one
-        return "https://mc.s4.exacttarget.com/cloud/#app/Journey%20/Builder/" + mid + "/";
+        return this.journeyURL;
     }
 
     //Function to navigate on the edit button click
