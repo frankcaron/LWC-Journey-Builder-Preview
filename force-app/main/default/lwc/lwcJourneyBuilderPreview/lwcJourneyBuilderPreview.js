@@ -425,9 +425,16 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         canvasContext.font = fontBody;
         this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
 
+        //Add to list
+        eventList.set(journeyEntry.key, {"x": entryEventX, "y": entryEventY});
+
         //----------------------
         // Draw All Other Activities
         //----------------------
+
+        //Set up Branch
+        let branchRightCounter = 0;
+        let branchDownCounter = 0;
 
         // For each path defined by a unique end point...
         for (let currentPath of drawPaths) { 
@@ -436,14 +443,11 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             console.log("Current Path is ");
             console.log(currentPath);
 
-            //Set up Branch
-            let branchDownCounter = 0;
-
             //Iterate through each step
             for (let pathStep = 1; pathStep < currentPath.length; pathStep++) {
 
                 // Count for right steps as we go
-                let branchRightCounter = pathStep;
+                branchRightCounter = pathStep;
                 
                 // Determine the current activity type
                 let currentActivity = currentPath[pathStep];
@@ -579,25 +583,38 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //----------------------
-        // Draw All Connector
+        // Draw All Connectors
         //----------------------
 
-        /* 
-        for (let outcome of currentActivity.outcomes) {
-            let outcomeKey = eventList.get(outcome.next);
-            let outcomeX = outcomeKey.x;
-            let outcomeY = outcomeKey.y;
+        //Connector type
+        let connectorType = "straight";
 
-            let start = { "x": outcomeX + shapeSize / 2 + shapePadding, "y": outcomeY + shapeSize / 2 };
-            let end = { "x": nextEventX, "y": nextEventY };
-            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
+        //For each path...
+        for (let currentPath of drawPaths) { 
+
+            //And each step in each path...
+            for (let pathStep = 1; pathStep < currentPath.length; pathStep++) {
+
+                // Grab current and previous activity keys
+                let currentActivityKey = currentPath[pathStep].key;
+                let currentActivityX = eventList.get(currentActivityKey).x;
+                let currentyActivityY = eventList.get(currentActivityKey).y;
+
+                let previousActivityKey = currentPath[pathStep - 1].key;
+                let previousActivityX = eventList.get(previousActivityKey).x;
+                let previousActivityY = eventList.get(previousActivityKey).y;
+
+                //Debug
+                console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
+
+                // Draw Connector between the two
+                let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
+                let end = { "x": previousActivityX, "y": previousActivityY };
+                this.drawElbow(canvasContext, connectorType, start, end, 12, connectorColor, connectorWidth );
+            }
+
+            connectorType = "bottomLeft";
         }
-        
-        //Draw Connector To Home
-        let start = { "x": nextEventX - shapeSize / 2 + shapePadding, "y": nextEventY + shapeSize / 2 };
-        let end = { "x": entryEventX, "y": entryEventY };
-        this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
-        */
 
       }
 
@@ -658,6 +675,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     
         // middle elbow
         switch (type) {
+            case "straight":
+                ctx.lineTo(start.x, end.y);
+                break;
             case "topLeft":
                 ctx.lineTo(start.x, end.y + cornerRadius);
                 ctx.quadraticCurveTo(
