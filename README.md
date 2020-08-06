@@ -7,3 +7,11 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
 
 ## Preview
 ![](preview.png)
+
+## Deployment
+* Use SFDX to deploy the source to your desired org
+* Add the `lwcJourneyBuilderPreview` component to your desired page
+
+## To Do
+* Swap out hard-coded stub with real JSON payload via MC APIs
+* Wire up component properties to make this something that can be more easily reused.
