@@ -241,6 +241,16 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     drawJourney(canvas, jsonSpec){
 
         //----------------------
+        //Set variables
+        //----------------------
+        let numShapes = 0;
+        let numPaths = 0;
+        let numEndPoints = 0;
+        let eventList = new Map();
+        let drawPaths = [];
+        let drawnPathItems = new Map();
+
+        //----------------------
         //Initialize canvas
         //----------------------
         let canvasWidth = 2560;
@@ -263,20 +273,78 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Entry Events
         let journeyEntry = jsonSpec.triggers[0];
 
-        //Activities
+        //All Activities
         let journeyActivities = jsonSpec.activities;
         let activitySet = new Set();
         for (const activity of journeyActivities) {
             activitySet.add(activity);
+            eventList.set(activity.key, {"x": 0, "y": 0});
+        }
+        numShapes = eventList.size;
+
+        //Only Non-Exits
+        let journeyActivityPoints = new Set();
+        for (let activity of activitySet) {
+            if (activity.outcomes) {
+                journeyActivityPoints.add(activity);
+            }
         }
 
-        //Exits
+        //Only Decisions
+        let journeyDecisionPoints = new Set();
+        for (let activity of activitySet) {
+            if (activity.type.includes("Split") || activity.type.includes("Decision")) {
+                journeyDecisionPoints.add(activity);
+                numPaths += activity.outcomes.length
+            }
+        }
+
+        //Only Exits
         let journeyEndPoints = new Set();
         for (let activity of activitySet) {
             if (!activity.outcomes) {
                 journeyEndPoints.add(activity);
             }
         }
+        numEndPoints = journeyEndPoints.size;
+
+        //Debug
+        //console.log("Number of total distinct paths: " + numPaths);
+        //console.log("Number of total distinct ends: " + numEndPoints);
+        //console.log("Number of distinct events: " + numShapes);
+
+        //Use Exits to work back to fill paths
+        for (let exit of journeyEndPoints) {
+
+            let pathArray = [];
+            let previousEventKey = exit.key;
+            let activityArray = Array.from(journeyActivityPoints); 
+
+            //Find next event in chain by going through outcomes
+            for (let i = 0; i < activityArray.length; i++) {
+                let outcomes = activityArray[i].outcomes;
+                for (let outcome of outcomes) {
+                    if (outcome.next == previousEventKey) {
+                        pathArray.push(activityArray[i]);
+                        previousEventKey = activityArray[i].key;
+                        i = 0;
+                    }
+                }
+            }
+
+            //Reverse Array
+            pathArray.reverse();
+
+            //Add entry and exit activity to the end
+            pathArray.unshift(journeyEntry);
+            pathArray.push(exit);
+
+            //Add entire array to the path
+            drawPaths.push(pathArray);
+        }
+
+        //Debug
+        console.log(drawPaths);
 
         //----------------------
         //Start Drawing
@@ -288,6 +356,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const shapeSize = 100;
         const shapeSpacing = 200;
         const shapeRounding = 20;
+        const shapePadding = 5;
 
         const fontMarginTop = 10;
         const fontHeader = 'bold 17px Arial'
@@ -299,6 +368,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         const eventEntryColor = '#97cf66';
         const activityEntryColor = '#52c7bc';
+        const activityColor = '#52c7bc';
+        const decisionColor = '#ec8b23';
+        const splitColor = '#97a4b1';
 
         const descriptionWidth = 150;
         const descriptionHeight = 150;
@@ -306,10 +378,6 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const descriptionLineHeight = 20;
         const descriptionFillColor = '#FFF'
         const descriptionBorderColor = '#BBB'
-
-        //Set counters
-        let numShapes = 0;
-        let numPaths = 0;
 
         //----------------------
         //Draw Entry Event
@@ -356,65 +424,181 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         canvasContext.fillText("Description:", entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 3);
         canvasContext.font = fontBody;
         this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
-           
-        //Increment
-        numShapes++;
 
         //----------------------
-        // Draw Exit Events
+        // Draw All Other Activities
         //----------------------
 
-        for (const exit of journeyEndPoints) {
+        // For each path defined by a unique end point...
+        for (let currentPath of drawPaths) { 
 
-            let nextEventX = left + shapeSize + (shapeSpacing * numShapes) ;
-            let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * numPaths;  
+            //Debug 
+            console.log("Current Path is ");
+            console.log(currentPath);
 
-            this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
-            canvasContext.fillStyle = activityEntryColor;
-            canvasContext.fill();
-            canvasContext.font = fontHeader;
-            canvasContext.fillStyle = fontColor;
-            canvasContext.textAlign = "center";
-            canvasContext.fillText("Activity", nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
+            //Set up Branch
+            let branchDownCounter = 0;
+
+            //Iterate through each step
+            for (let pathStep = 1; pathStep < currentPath.length; pathStep++) {
+
+                // Count for right steps as we go
+                let branchRightCounter = pathStep;
+                
+                // Determine the current activity type
+                let currentActivity = currentPath[pathStep];
+                let currentActivityType = currentActivity.type;
+
+                //Ensure we're not duplicating efforts, and if we are, move onto the next node
+                if (drawnPathItems.has(currentActivity.key)) { 
+                    console.log("Repeating a drawn activity, so skipping");
+                    continue; 
+                }
+
+                // Debug
+                console.log("Current on branch down  " + branchDownCounter);
+                console.log("Evaluating activity at step " + pathStep + " and type " + currentActivityType);
+                
+                if (currentActivityType.includes("Decision") || currentActivityType.includes("Split")) {
+
+                    // Debug
+                    console.log("Drawing decision activity for " + currentActivity.name);
+                    
+                    // Draw Decisions
+                    let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) + shapeSpacing / 4;
+                    let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
+
+                    canvasContext.beginPath();
+                    canvasContext.moveTo(nextEventX, nextEventY);
+                    canvasContext.lineTo(nextEventX + shapeSize / 2, nextEventY + shapeSize / 2);
+                    canvasContext.lineTo(nextEventX, nextEventY + shapeSize);
+                    canvasContext.lineTo(nextEventX - shapeSize / 2, nextEventY + shapeSize / 2);
+                    canvasContext.closePath();
+
+                    canvasContext.fillStyle = currentActivityType.includes("Split") ? splitColor : decisionColor;
+                    canvasContext.fill();
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.fillText(currentActivityType.includes("Split") ? "Split" : "Decision", nextEventX, nextEventY + shapeSize / 2 + fontMarginTop / 1.5);
+
+                    //Draw Decision Box
+                    let decisionEventDescriptionX = nextEventX - descriptionWidth / 2;
+                    let decisionEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
+
+                    canvasContext.beginPath();
+                    canvasContext.rect(decisionEventDescriptionX, decisionEventDescriptionY, descriptionWidth, descriptionHeight);
+                    canvasContext.closePath();
+                    canvasContext.fillStyle = descriptionFillColor;
+                    canvasContext.fill();
+                    canvasContext.lineWidth = 1;
+                    canvasContext.strokeStyle = descriptionBorderColor;
+                    canvasContext.stroke();
+
+                    //Draw Entry Event Text
+                    let decisionEventDescriptionTextX = nextEventX;
+                    let decisionEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
+
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Name:", decisionEventDescriptionTextX, decisionEventDescrtipionTextY);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.key, decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Description:", decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight * 3);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.name, decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+
+                    //Add to list
+                    eventList.set(currentActivity.key, {"x": nextEventX, "y": nextEventY});
+
+                    //Iterate
+                    branchRightCounter++;
+
+                } else {
+
+                    // Debug
+                    console.log("Drawing normal activity for " + currentActivity.name);
+
+                    // Draw Activity
+                    let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) ;
+                    let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
+
+                    this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
+                    canvasContext.fillStyle = activityEntryColor;
+                    canvasContext.fill();
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.fillText("Activity", nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
 
 
-            //Draw Entry Event Box
-            let endpointEventDescriptionX = nextEventX - descriptionWidth / 5;
-            let endpointEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
+                    //Draw Entry Event Box
+                    let endpointEventDescriptionX = nextEventX - descriptionWidth / 5;
+                    let endpointEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
 
-            canvasContext.beginPath();
-            canvasContext.rect(endpointEventDescriptionX, endpointEventDescriptionY, descriptionWidth, descriptionHeight);
-            canvasContext.closePath();
-            canvasContext.fillStyle = descriptionFillColor;
-            canvasContext.fill();
-            canvasContext.lineWidth = 1;
-            canvasContext.strokeStyle = descriptionBorderColor;
-            canvasContext.stroke();
+                    canvasContext.beginPath();
+                    canvasContext.rect(endpointEventDescriptionX, endpointEventDescriptionY, descriptionWidth, descriptionHeight);
+                    canvasContext.closePath();
+                    canvasContext.fillStyle = descriptionFillColor;
+                    canvasContext.fill();
+                    canvasContext.lineWidth = 1;
+                    canvasContext.strokeStyle = descriptionBorderColor;
+                    canvasContext.stroke();
 
-            //Draw Entry Event Text
-            let endpointEventDescriptionTextX = nextEventX + descriptionWidth / 3;
-            let endpointEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
+                    //Draw Entry Event Text
+                    let endpointEventDescriptionTextX = nextEventX + descriptionWidth / 3;
+                    let endpointEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
 
-            canvasContext.fillStyle = fontColor;
-            canvasContext.textAlign = "center";
-            canvasContext.font = fontHeader;
-            canvasContext.fillText("Name:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY);
-            canvasContext.font = fontBody;
-            this.wrapText(canvasContext, exit.key, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
-            canvasContext.font = fontHeader;
-            canvasContext.fillText("Description:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 3);
-            canvasContext.font = fontBody;
-            this.wrapText(canvasContext, exit.name, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Name:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.key, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Description:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 3);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.name, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
 
-            //Draw Connector
-            let start = { "x": nextEventX + shapeSize / 2, "y": nextEventY + shapeSize / 2 };
-            let end = { "x": entryEventX, "y": entryEventY };
-            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
+                    //Add to list
+                    eventList.set(currentActivity.key, {"x": nextEventX, "y": nextEventY});
 
-            //Increment
-            numPaths++;
-            numShapes++;
+                    //Iterate
+                    branchRightCounter++;
+
+                }
+
+                // Mark down that this activity has been drawn
+                drawnPathItems.set(currentActivity.key, currentActivity);
+            }
+
+            //Iterate
+            branchDownCounter++;
         }
+
+        //----------------------
+        // Draw All Connector
+        //----------------------
+
+        /* 
+        for (let outcome of currentActivity.outcomes) {
+            let outcomeKey = eventList.get(outcome.next);
+            let outcomeX = outcomeKey.x;
+            let outcomeY = outcomeKey.y;
+
+            let start = { "x": outcomeX + shapeSize / 2 + shapePadding, "y": outcomeY + shapeSize / 2 };
+            let end = { "x": nextEventX, "y": nextEventY };
+            this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
+        }
+        
+        //Draw Connector To Home
+        let start = { "x": nextEventX - shapeSize / 2 + shapePadding, "y": nextEventY + shapeSize / 2 };
+        let end = { "x": entryEventX, "y": entryEventY };
+        this.drawElbow(canvasContext, "bottomLeft", start, end, 12, connectorColor, connectorWidth );
+        */
+
       }
 
       // Function to wrap text in a box
@@ -442,7 +626,6 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
      roundRect(ctx, x, y, width, height, radius) {
         if (typeof radius == 'number') {
           radius = {tl: radius, tr: radius, br: radius, bl: radius};
-          console.log(radius);
         } else {
           var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
           for (var side in defaultRadius) {
