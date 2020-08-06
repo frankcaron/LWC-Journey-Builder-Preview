@@ -1,18 +1,17 @@
 import { LightningElement, api } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import getSpec from '@salesforce/apex/retrieveMCJourneySpec.getSpec';
 
 export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningElement) {
 
     // Properties
     @api
-    MarketingCloudOrg = '';
-
-    @api
-    journeyURL = ''
+    journeyGuid = '';
 
     // Internal Vars
     journeyId = '';
     journeyMid = '';
+    journeyURL = ''
     
     renderedCallback() {
 

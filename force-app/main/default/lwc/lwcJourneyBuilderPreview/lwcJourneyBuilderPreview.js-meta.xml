@@ -12,16 +12,13 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__FlowScreen">
-            <property name="MarketingCloudOrg" type="String"  /> 
-            <property name="journeyURL" type="String"  /> 
+            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  /> 
         </targetConfig>
         <targetConfig targets="lightning__RecordPage,lightning__AppPage, lightning__HomePage">
-            <property name="MarketingCloudOrg" type="String"  /> 
-            <property name="journeyURL" type="String"  /> 
+            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  />
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
-            <property name="MarketingCloudOrg" type="String"  /> 
-            <property name="journeyURL" type="String"  /> 
+            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  />
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
