@@ -6,7 +6,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
     // Properties
     @api
-    journeyGuid = 'a7da3796-d2d7-497b-a89f-6e77754912e8';
+    journeyGuid = '';
 
     // Internal Vars
     journeyId = '';
