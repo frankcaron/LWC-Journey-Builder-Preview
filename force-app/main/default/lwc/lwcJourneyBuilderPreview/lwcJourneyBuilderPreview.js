@@ -244,7 +244,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Otherwise, return the real one
-        return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23' + guid;
+        return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23' + guid + '/v';
     }
 
     //Function to navigate on the edit button click
