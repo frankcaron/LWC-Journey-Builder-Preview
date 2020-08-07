@@ -27,5 +27,4 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
 * Configure the component's attributes to feed in the Journey ID and URLs for your Marketing Cloud instance
 
 ## To Do
-* Swap out hard-coded stub with real JSON payload via MC APIs
-* Wire up component properties to make this something that can be more easily reused.
+* Fix up the drawing to accomodate more variations of how specs generate in the real world

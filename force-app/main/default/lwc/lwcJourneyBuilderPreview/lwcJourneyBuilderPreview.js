@@ -6,7 +6,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
     // Properties
     @api
-    journeyGuid = '';
+    journeyGuid = 'a7da3796-d2d7-497b-a89f-6e77754912e8';
 
     // Internal Vars
     journeyId = '';
@@ -210,14 +210,18 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 ]
             };
 
+        console.log("JourneyGuid set to " + this.journeyGuid);
+
         if (this.journeyGuid != '') {
             getSpec({ guid: this.journeyGuid })
                 .then(result => {
 
                     let parsedResult = JSON.parse(result);
+                    console.log("parsedResult set to " + parsedResult);
+
                     if (parsedResult.errorcode == undefined && parsedResult != undefined) { 
                         this.jsonSpec = parsedResult;
-                    }
+                    }     
 
                 })
                 .catch(error => {
@@ -321,7 +325,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Only Exits
         let journeyEndPoints = new Set();
         for (let activity of activitySet) {
-            if (!activity.outcomes) {
+            console.log(activity.outcomes);
+            if (!activity.outcomes || !activity.outcomes[0].next) {
                 journeyEndPoints.add(activity);
             }
         }
