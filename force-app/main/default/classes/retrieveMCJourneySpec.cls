@@ -17,14 +17,15 @@ public with sharing class retrieveMCJourneySpec {
       String spec = '';
       
       // Fetch the credentials for the API from the Custom Metadata Type
-      Marketing_Cloud_Credentials__mdt[] credentials = [SELECT Client_ID__c, Client_Secret__c, REST_URL__c, AUTH_URL__c FROM Marketing_Cloud_Credentials__mdt];
+      Marketing_Cloud_Credential__mdt[] credentials = [SELECT Client_ID__c, Client_Secret__c, REST_URL__c, AUTH_URL__c, DeveloperName FROM Marketing_Cloud_Credential__mdt WHERE DeveloperName = 'MCCConfig'];
       clientId = credentials[0].Client_ID__c;
       clientSecret = credentials[0].Client_Secret__c;
-      MARKETING_CLOUD_AUTH_URL = credentials[0].AUTH_URL__c;
-      MARKETING_CLOUD_REST_URL = credentials[0].REST_URL__c; 
+      MARKETING_CLOUD_AUTH_URL = credentials[0].AUTH_URL__c + '/v2/token';
+      MARKETING_CLOUD_REST_URL = credentials[0].REST_URL__c + '/interaction/v1/interactions/'; 
       
       //Debug
       System.debug('DEBUG: Credentials nabbed. Value = ' + clientId + ' ' + clientSecret);
+      System.debug('DEBUG: URLs set. Value = ' + MARKETING_CLOUD_AUTH_URL + ' ' + MARKETING_CLOUD_REST_URL);
       
       //Get OAuth token 
       Http h = new Http();

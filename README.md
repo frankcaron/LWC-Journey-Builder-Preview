@@ -15,9 +15,10 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
 * Knowledge of custom metadata types
 
 ## Deployment
+* Set up your Marketing Cloud account with a new custom package with an API integration component
 * Use SFDX to deploy the source to your desired org
-* Set up Remote Site Settings to whitelist the `auth` and `rest` endpoints for your instance of Marketing Cloud
-* Set up a custom metadata type named `Marketing_Cloud_Credentials__mdt` with the following attributes:
+* Change the Remote Site Settings for `MarketingCloudRESTURL` and `MarketingCloudAuthURL` to whitelist the `auth` and `rest` endpoints for your instance of Marketing Cloud
+* Add a record to the `Marketing Cloud Credentials` custom record type named `MCCConfig` with the following attributes populated based on your MC app details:
     * `Client_ID__c`
     * `Client_Secret__c`
     * `AUTH_URL__c`
