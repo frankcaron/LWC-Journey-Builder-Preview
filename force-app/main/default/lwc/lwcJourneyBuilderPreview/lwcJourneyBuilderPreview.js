@@ -12,24 +12,31 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     journeyId = '';
     journeyMid = '';
     journeyURL = ''
+    jsonSpec = '';
     
     renderedCallback() {
+        //Retrieve the JSON spec and go
+        this.getJsonSpec();
+    }
 
-        //Set up variables
-        let jsonSpec = this.getJsonSpec();
+    // Draw the componentry once the spec is loaded
+    drawComponent() {
+
+        console.log("Checking spec before render");
+        console.log(this.jsonSpec);
 
         //Set top level variables
-        this.journeyId = jsonSpec.id;
-        this.journeyMid = jsonSpec.key;
-        this.journeyURL = this.getJourneyURL(jsonSpec.key, false);
+        this.journeyId = this.jsonSpec.id;
+        this.journeyMid = this.jsonSpec.key;
+        this.journeyURL = this.getJourneyURL(this.jsonSpec.key, false);
 
         //---- Create HTML Canvas elements ----- 
 
         //Journey Header
         let journeyHeaderCard = '';
         journeyHeaderCard += `<div class="journey-header">`;
-        journeyHeaderCard += `<div class="journey-title">${jsonSpec.name}</div>`;
-        journeyHeaderCard += `<div class="journey-description">${jsonSpec.description}</div>`;
+        journeyHeaderCard += `<div class="journey-title">${this.jsonSpec.name}</div>`;
+        journeyHeaderCard += `<div class="journey-description">${this.jsonSpec.description}</div>`;
         journeyHeaderCard += `</div>`;
 
         //Journey Canvas
@@ -38,7 +45,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Journey Footer
         let journeyFooterCard = '';
         journeyFooterCard += `<div class="journey-footer">`;
-        journeyFooterCard += `<div class="journey-footer-content">Last updated ${jsonSpec.modifiedDate}</div>`;
+        journeyFooterCard += `<div class="journey-footer-content">Last updated ${this.jsonSpec.modifiedDate}</div>`;
         journeyFooterCard += `</div>`;
 
         //---- Modify DOM ----- 
@@ -49,17 +56,13 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         // ---- Draw Journey ---
         let journeyCanvasObj = this.template.querySelectorAll(`[class*="journey-canvas"]`)[0];
-        this.drawJourney(journeyCanvasObj, jsonSpec);
-
+        this.drawJourney(journeyCanvasObj);
     }
 
     // Function to retrieve spec from Marketing Cloud API
-    getJsonSpec(testMode = true) {
-        let jsonToReturn = '';
+    getJsonSpec() {
 
-        //If test mode is on, return the stub.
-        if (testMode) {
-            jsonToReturn = {
+        this.jsonSpec = {
                 "id": "unique-UUID-provided-by-SFMC",
                 "key": "a-key-that-is-unique-for-MID",
                 "version": 1,
@@ -206,14 +209,26 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     }
                 ]
             };
-        } else {
-            // Retrieve from API
-            jsonToReturn = "Not a stub";
-        }
-            
-        //Return 
-        return jsonToReturn;
 
+        if (this.journeyGuid != '') {
+            getSpec({ guid: this.journeyGuid })
+                .then(result => {
+
+                    let parsedResult = JSON.parse(result);
+                    if (parsedResult.errorcode == undefined && parsedResult != undefined) { 
+                        this.jsonSpec = parsedResult;
+                    }
+
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+                .finally(() => {
+                    this.drawComponent();
+                });
+        } else {
+            this.drawComponent();
+        }
     }
 
     // Function to get Journey URL
@@ -239,7 +254,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     }
 
     //Function to draw Journey on Cnavs
-    drawJourney(canvas, jsonSpec){
+    drawJourney(canvas){
 
         //----------------------
         //Set variables
@@ -272,10 +287,13 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //----------------------
 
         //Entry Events
-        let journeyEntry = jsonSpec.triggers[0];
+        let journeyEntry = "";
+        if (this.jsonSpec.triggers[0] != undefined) {
+            journeyEntry = this.jsonSpec.triggers[0];
+        }
 
         //All Activities
-        let journeyActivities = jsonSpec.activities;
+        let journeyActivities = this.jsonSpec.activities;
         let activitySet = new Set();
         for (const activity of journeyActivities) {
             activitySet.add(activity);
@@ -310,9 +328,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         numEndPoints = journeyEndPoints.size;
 
         //Debug
-        //console.log("Number of total distinct paths: " + numPaths);
-        //console.log("Number of total distinct ends: " + numEndPoints);
-        //console.log("Number of distinct events: " + numShapes);
+        console.log("Number of total distinct paths: " + numPaths);
+        console.log("Number of total distinct ends: " + numEndPoints);
+        console.log("Number of distinct events: " + numShapes);
 
         //Use Exits to work back to fill paths
         for (let exit of journeyEndPoints) {
@@ -386,49 +404,51 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //----------------------
         
         //Draw Entry Event
-        let entryEventX = left + shapeSize;
-        let entryEventY = top + shapeSize;
+        if (journeyEntry != '') { 
+            let entryEventX = left + shapeSize;
+            let entryEventY = top + shapeSize;
 
-        canvasContext.beginPath();
-        canvasContext.arc(entryEventX, entryEventY, shapeSize / 2, 0, 2 * Math.PI, false);
-        canvasContext.closePath();
-        canvasContext.fillStyle = eventEntryColor;
-        canvasContext.fill();
-        canvasContext.font = fontHeader;
-        canvasContext.fillStyle = fontColor;
-        canvasContext.textAlign = "center";
-        canvasContext.fillText("Entry", entryEventX, entryEventY + fontMarginTop);
+            canvasContext.beginPath();
+            canvasContext.arc(entryEventX, entryEventY, shapeSize / 2, 0, 2 * Math.PI, false);
+            canvasContext.closePath();
+            canvasContext.fillStyle = eventEntryColor;
+            canvasContext.fill();
+            canvasContext.font = fontHeader;
+            canvasContext.fillStyle = fontColor;
+            canvasContext.textAlign = "center";
+            canvasContext.fillText("Entry", entryEventX, entryEventY + fontMarginTop);
 
-        //Draw Entry Event Box
-        let entryEventDescriptionX = entryEventX - descriptionWidth / 2;
-        let entryEventDescriptionY = entryEventY + descriptionHeight / 2 + descriptionPadding;
+            //Draw Entry Event Box
+            let entryEventDescriptionX = entryEventX - descriptionWidth / 2;
+            let entryEventDescriptionY = entryEventY + descriptionHeight / 2 + descriptionPadding;
 
-        canvasContext.beginPath();
-        canvasContext.rect(entryEventDescriptionX, entryEventDescriptionY, descriptionWidth, descriptionHeight);
-        canvasContext.closePath();
-        canvasContext.fillStyle = descriptionFillColor;
-        canvasContext.fill();
-        canvasContext.lineWidth = 1;
-        canvasContext.strokeStyle = descriptionBorderColor;
-        canvasContext.stroke();
+            canvasContext.beginPath();
+            canvasContext.rect(entryEventDescriptionX, entryEventDescriptionY, descriptionWidth, descriptionHeight);
+            canvasContext.closePath();
+            canvasContext.fillStyle = descriptionFillColor;
+            canvasContext.fill();
+            canvasContext.lineWidth = 1;
+            canvasContext.strokeStyle = descriptionBorderColor;
+            canvasContext.stroke();
 
-        //Draw Entry Event Text
-        let entryEventDescriptionTextX = entryEventDescriptionX + descriptionWidth / 1.9;
-        let entryEventDescrtipionTextY = entryEventDescriptionY + descriptionLineHeight;
+            //Draw Entry Event Text
+            let entryEventDescriptionTextX = entryEventDescriptionX + descriptionWidth / 1.9;
+            let entryEventDescrtipionTextY = entryEventDescriptionY + descriptionLineHeight;
 
-        canvasContext.fillStyle = fontColor;
-        canvasContext.textAlign = "center";
-        canvasContext.font = fontHeader;
-        canvasContext.fillText("Name:", entryEventDescriptionTextX, entryEventDescrtipionTextY);
-        canvasContext.font = fontBody;
-        this.wrapText(canvasContext, journeyEntry.key, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
-        canvasContext.font = fontHeader;
-        canvasContext.fillText("Description:", entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 3);
-        canvasContext.font = fontBody;
-        this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+            canvasContext.fillStyle = fontColor;
+            canvasContext.textAlign = "center";
+            canvasContext.font = fontHeader;
+            canvasContext.fillText("Name:", entryEventDescriptionTextX, entryEventDescrtipionTextY);
+            canvasContext.font = fontBody;
+            this.wrapText(canvasContext, journeyEntry.key, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+            canvasContext.font = fontHeader;
+            canvasContext.fillText("Description:", entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 3);
+            canvasContext.font = fontBody;
+            this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
 
-        //Add to list
-        eventList.set(journeyEntry.key, {"x": entryEventX, "y": entryEventY});
+            //Add to list
+            eventList.set(journeyEntry.key, {"x": entryEventX, "y": entryEventY});
+        }
 
         //----------------------
         // Draw All Other Activities
@@ -442,8 +462,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         for (let currentPath of drawPaths) { 
 
             //Debug 
-            console.log("Current Path is ");
-            console.log(currentPath);
+            //console.log("Current Path is ");
+            //console.log(currentPath);
 
             //Iterate through each step
             for (let pathStep = 1; pathStep < currentPath.length; pathStep++) {
@@ -457,18 +477,18 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
                 //Ensure we're not duplicating efforts, and if we are, move onto the next node
                 if (drawnPathItems.has(currentActivity.key)) { 
-                    console.log("Repeating a drawn activity, so skipping");
+                    //console.log("Repeating a drawn activity, so skipping");
                     continue; 
                 }
 
                 // Debug
-                console.log("Current on branch down  " + branchDownCounter);
-                console.log("Evaluating activity at step " + pathStep + " and type " + currentActivityType);
+                //console.log("Current on branch down  " + branchDownCounter);
+                //console.log("Evaluating activity at step " + pathStep + " and type " + currentActivityType);
                 
                 if (currentActivityType.includes("Decision") || currentActivityType.includes("Split")) {
 
                     // Debug
-                    console.log("Drawing decision activity for " + currentActivity.name);
+                    //console.log("Drawing decision activity for " + currentActivity.name);
                     
                     // Draw Decisions
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) + shapeSpacing / 4;
@@ -525,7 +545,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 } else {
 
                     // Debug
-                    console.log("Drawing normal activity for " + currentActivity.name);
+                    //console.log("Drawing normal activity for " + currentActivity.name);
 
                     // Draw Activity
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) ;
@@ -612,18 +632,18 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
                 let previousActivityType = currentPath[pathStep - 1].type;
 
-                console.log(drawnPathItems);
+                //console.log(drawnPathItems);
 
                 //Ensure we're not duplicating efforts, and if we are, move onto the next node
                 if (drawnPathItems.has(currentActivityKey)) { 
-                    console.log("Repeating a drawn activity, so skipping");
+                    //console.log("Repeating a drawn activity, so skipping");
                     continue; 
                 } else {
                     drawnPathItems.set(currentActivityKey, currentPath[pathStep]);
                 }
 
                 //Debug
-                console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
+                //console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
 
                 if (previousActivityType == "Event") {
                     // Draw Elbow Connector between the two

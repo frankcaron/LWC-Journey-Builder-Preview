@@ -2,6 +2,8 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>48.0</apiVersion>
     <isExposed>true</isExposed>
+    <masterLabel>Journey Builder Embedder</masterLabel>
+    <description>This component allows you to embed a journey from Marketing Cloud in Core Salesforce or a Community.</description>
     <targets>
         <target>lightning__FlowScreen</target>
         <target>lightning__RecordPage</target>
