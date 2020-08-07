@@ -28,7 +28,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Set top level variables
         this.journeyId = this.jsonSpec.id;
         this.journeyMid = this.jsonSpec.key;
-        this.journeyURL = this.getJourneyURL(this.jsonSpec.key, false);
+        this.journeyURL = this.getJourneyURL(this.journeyGuid, false);
 
         //---- Create HTML Canvas elements ----- 
 
@@ -236,7 +236,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     }
 
     // Function to get Journey URL
-    getJourneyURL(mid, testMode = true) {
+    getJourneyURL(guid, testMode = false) {
 
         //If in test mode, return the hard-coded val
         if (testMode) {
@@ -244,7 +244,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Otherwise, return the real one
-        return this.journeyURL;
+        return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23' + guid;
     }
 
     //Function to navigate on the edit button click
