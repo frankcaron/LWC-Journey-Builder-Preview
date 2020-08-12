@@ -15,7 +15,12 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
 * Knowledge of custom metadata types
 
 ## Deployment
-* Set up your Marketing Cloud account with a new custom package with an API integration component
+### Marketing Cloud Setup
+* In MC setup, go to Installed Packages and create a New Package
+* Add Component and select `API Integration`, and `Server to Server`
+* Enable `Read` access to Journeys
+
+### Force.com Setup
 * Use SFDX to deploy the source to your desired org
 * Change the Remote Site Settings for `MarketingCloudRESTURL` and `MarketingCloudAuthURL` to whitelist the `auth` and `rest` endpoints for your instance of Marketing Cloud
 * Add to the `Marketing Cloud Credentials` custom metadata type a record (API) named `MCCConfig` with the following attributes populated based on your MC app details:
