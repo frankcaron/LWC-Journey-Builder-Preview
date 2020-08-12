@@ -30,6 +30,8 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
     * `REST_URL__c`
 * Add the `lwcJourneyBuilderPreview` component to your desired page
 * Configure the component's attributes to feed in the Journey ID and URLs for your Marketing Cloud instance
+   * The GUID is in the journey's URL after '/Journey%20Builder/%23' 
+     ![](GUID.png)
 
 ## To Do
 * Fix up the drawing to accomodate more variations of how specs generate in the real world
