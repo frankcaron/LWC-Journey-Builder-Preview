@@ -4,11 +4,6 @@ global class parseEmail implements Messaging.InboundEmailHandler {
         
         Messaging.InboundEmailResult result = new Messaging.InboundEmailresult();    
         
-        //Record Type for Creative
-        //Id myRecordTypeID = Schema.SObjectType.Opportunity.getRecordTypeInfosByDeveloperName().get('Creative').getRecordTypeId();
-        //
-        //
-        
         System.debug('=====Email Parser=====');
         
         String contentSubject = email.subject;
@@ -32,9 +27,10 @@ global class parseEmail implements Messaging.InboundEmailHandler {
         system.debug('|| Web Page Regex result: ' + foundWebPageLink);
         
         if (foundWebPageLink == true) {
-            webPageLinkURL = viewAsRegex.group(0);
-            webPageGUID = viewAsRegex.group(1);
+            webPageLinkURL = viewAsRegex.group(1);
+            webPageGUID = viewAsRegex.group(2);
         	system.debug('|| Web Page Regex result: ' + webPageLinkURL);
+            system.debug('|| Web Page Regex guid: ' + webPageGUID);
         }
         
         // Find the Approval Link
@@ -48,22 +44,38 @@ global class parseEmail implements Messaging.InboundEmailHandler {
         system.debug('|| Approval Regex result: ' + reviewFound);
         
         if (reviewFound == true) {
-            reviewURL = reviewRegex.group(0);
-            reviewModel = reviewRegex.group(1);
-            reviewsubURL = reviewRegex.group(2);
+            reviewURL = reviewRegex.group(1);
+            reviewModel = reviewRegex.group(2);
+            reviewsubURL = reviewRegex.group(3);
             emailType = 'Preview';
         	system.debug('|| Approval Regex result: ' + reviewURL);
+            system.debug('|| Approval Regex model: ' + reviewModel);
+            system.debug('|| Approval Regex subURL: ' + reviewsubURL);
         }
         
         //Do the org magic
         
         if(emailType == 'Preview') {
             
-             System.debug('|| Email is a preview email. Parsing accordingly.');
-            //Do the stuff
+            System.debug('|| Email is a preview email. Parsing accordingly.');
+            
+            //Find matching creative for the hard-coded Campaign record
+            Creative__c creative = [SELECT Id, Name, Campaign__c, Marketing_Cloud_Ref_ID__c, Approval_Status__c from Creative__c WHERE Campaign__c = '7013t000001dHWKAA2' AND Marketing_Cloud_Ref_ID__c = 'NTIzMDA0MDA2OjE5OjA']; 
+            
+            //Update status
+            creative.Approval_Status__c = 'Legal Approval';
+            update creative;
+            
+            System.debug('|| Moved the record ' + creative.Name + ' to approved status automatically.');
         }
         
+        
+        Creative__c creative = new Creative__c();
+        
         //Opportunity myOpportunity = new Opportunity();
+        //
+        //
+        //
         //myOpportunity.Name = email.subject; // Name
         //myOpportunity.RecordTypeId = myRecordTypeID; // For specific record type
         //myOpportunity.StageName = 'Qualification'; // Qualification stage
