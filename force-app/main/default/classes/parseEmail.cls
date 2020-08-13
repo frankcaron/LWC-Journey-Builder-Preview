@@ -47,7 +47,7 @@ global class parseEmail implements Messaging.InboundEmailHandler {
             reviewURL = reviewRegex.group(1);
             reviewModel = reviewRegex.group(2);
             reviewsubURL = reviewRegex.group(3);
-            emailType = 'Preview';
+            emailType = 'Approval';
         	system.debug('|| Approval Regex result: ' + reviewURL);
             system.debug('|| Approval Regex model: ' + reviewModel);
             system.debug('|| Approval Regex subURL: ' + reviewsubURL);
@@ -55,7 +55,7 @@ global class parseEmail implements Messaging.InboundEmailHandler {
         
         //Do the org magic
         
-        if(emailType == 'Preview') {
+        if(emailType == 'Approval') {
             
             System.debug('|| Email is a preview email. Parsing accordingly.');
             
