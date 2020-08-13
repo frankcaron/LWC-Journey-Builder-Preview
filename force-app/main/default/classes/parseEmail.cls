@@ -19,7 +19,7 @@ global class parseEmail implements Messaging.InboundEmailHandler {
         
         // Find the Web Page View Link
         
-        Matcher viewAsRegex = Pattern.compile('To view this email as a web page, go.*<a href=["](.*[?][q][s][=](.*).*)["].*target.*>.*<\\/a>').matcher(contentBody);
+        Matcher viewAsRegex = Pattern.compile('To view this email as a web page, go.*<a href=["](.*[?][q][s][=](\\w*))["].*>.*<\\/a>').matcher(contentBody);
         Boolean foundWebPageLink = viewAsRegex.find();
         String webPageLinkURL = '';
         String webPageGUID = '';
