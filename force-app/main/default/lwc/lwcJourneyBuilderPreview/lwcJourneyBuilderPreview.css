@@ -123,3 +123,13 @@
     margin-top: 4.5em;
     background-color: rgb(222,222,222,0.75);
 }
+
+/* Modal */
+.slds-modal__content{
+    overflow: initial;
+}
+
+.slds-card {
+    min-width: 500px;
+    width: 100%;
+}

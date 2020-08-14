@@ -1,4 +1,47 @@
 <template>
+
+    <!-- Modal -->
+    <template if:true={creatingJourney}>
+        <!-- Modal/Popup Box LWC starts here -->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box LWC header here -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={stopCreateJourney}>
+                        <lightning-icon icon-name="utility:close"
+                            alternative-text="close"
+                            variant="inverse"
+                            size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Modal/PopUp Box header LWC</h2>
+                </header>
+                <!-- Modal/Popup Box LWC body starts here -->
+                <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1">
+                    <p class="slds-text-body_regular">Select the type of journey you'd like to create:</p>
+                    <br />
+                    <lightning-combobox
+                        name="journeyType"
+                        label="Journey Accelerator"
+                        value={journeyType}
+                        placeholder="Select an accelerator..."
+                        options={options}
+                        onchange={handleChange} >
+                  </lightning-combobox>
+                  <br />
+                </div>
+                <!-- Modal/Popup Box LWC footer starts here -->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={stopCreateJourney} title="Cancel">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick={createJourney} title="OK">OK</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+
+    <!-- Main Journey Component -->  
     <article class="slds-card slds-container_fluid">
         <div class="slds-card__header slds-grid">
           <header class="slds-media slds-media_center slds-has-flexi-truncate">
@@ -18,6 +61,7 @@
               </h2>
             </div>
             <div class="slds-no-flex">
+              <button onclick={startCreateJourney} class="slds-button slds-button_neutral">Create New Journey</button>
               <button onclick={navigateToMCJourneyPage} class="slds-button slds-button_neutral">Edit</button>
             </div>
           </header>
@@ -29,7 +73,9 @@
                         <div class="slds-container_fluid journey-render-container journey-holder slds-scrollable_x slds-scrollable_y" lwc:dom="manual"></div>
                     </div>
                     <div class="slds-col slds-size_1-of-1 journey-end">
+                      <template if:true={journeyId}>
                         <div class="slds-text-body_small padded slds-text-align_center">This preview is being generated from the connected Journey <span class="gray-id">({journeyId})</span> in MC BU with MID <span class="gray-id">({journeyMid})</span>.</div>
+                      </template>
                     </div>
                 </div>
             </div>

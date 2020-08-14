@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getSpec from '@salesforce/apex/retrieveMCJourneySpec.getSpec';
 
@@ -8,6 +8,12 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     @api
     journeyGuid = '';
 
+    @track
+    creatingJourney = false;
+
+    @track
+    value = 'emailSplit';
+
     // Internal Vars
     journeyId = '';
     journeyMid = '';
@@ -16,7 +22,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     
     renderedCallback() {
         //Retrieve the JSON spec and go
-        this.getJsonSpec();
+        //this.getJsonSpec();
     }
 
     // Draw the componentry once the spec is loaded
@@ -773,6 +779,40 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         //Return to normal
         ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Combobox for journey creation
+
+    get options() {
+        return [
+            { label: 'Single Send', value: 'singleSend' },
+            { label: 'Email and SMS Split', value: 'emailSplit' },
+            { label: 'Multi-email Journey', value: 'journey' },
+        ];
+    }
+
+    handleChange(event) {
+        this.value = event.detail.value;
+    }
+
+
+    // Open the journey creation modal
+    startCreateJourney() {
+        this.creatingJourney = true;
+    }
+
+    // Close the journey creation modal
+    stopCreateJourney() {
+        this.creatingJourney = false;
+    }
+
+    // Create the desired journey
+    createJourney() {
+        this.getJsonSpec();
+
+        //Close Modal
+        this.creatingJourney = false;
+
     }
 
 }
