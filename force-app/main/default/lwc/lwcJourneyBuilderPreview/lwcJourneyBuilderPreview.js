@@ -27,7 +27,10 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     creatingJourney = false;
 
     @track
-    value = 'emailSplit';
+    journeyType = '';
+
+    @track
+    journeyGuidToLoad = '';
 
     // Internal Vars
     journeyId = '';
@@ -49,7 +52,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Set top level variables
         this.journeyId = this.jsonSpec.id;
         this.journeyMid = this.jsonSpec.key;
-        this.journeyURL = this.getJourneyURL(this.journeyGuid, false);
+        this.journeyURL = this.getJourneyURL(this.journeyGuidToLoad, false);
 
         //---- Create HTML Canvas elements ----- 
 
@@ -83,7 +86,35 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     // Function to retrieve spec from Marketing Cloud API
     getJsonSpec() {
 
-        this.jsonSpec = {
+        //Debug
+        //console.log('SPEC RETRIEVAL || Retrieve Journey Spec...');
+        //console.log('SPEC RETRIEVAL || Type ask is ' + this.journeyType);
+        //console.log("SPEC RETRIEVAL || JourneyGuid set to " + this.journeyGuidToLoad);
+
+        // If we have a legit guid, load it, otherwise, load the fallback
+        if (this.journeyGuidToLoad != '') {
+            getSpec({ guid: this.journeyGuidToLoad })
+                .then(result => {
+
+                    let parsedResult = JSON.parse(result);
+                    //console.log("parsedResult set to " + parsedResult);
+
+                    if (parsedResult.errorcode == undefined && parsedResult != undefined) { 
+                        this.jsonSpec = parsedResult;
+                    }     
+
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+                .finally(() => {
+                    this.drawComponent();
+                });
+        } else {
+
+            // Load fallback demo stub
+
+            this.jsonSpec = {
                 "id": "unique-UUID-provided-by-SFMC",
                 "key": "a-key-that-is-unique-for-MID",
                 "version": 1,
@@ -231,27 +262,6 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 ]
             };
 
-        console.log("JourneyGuid set to " + this.journeyGuid);
-
-        if (this.journeyGuid != '') {
-            getSpec({ guid: this.journeyGuid })
-                .then(result => {
-
-                    let parsedResult = JSON.parse(result);
-                    console.log("parsedResult set to " + parsedResult);
-
-                    if (parsedResult.errorcode == undefined && parsedResult != undefined) { 
-                        this.jsonSpec = parsedResult;
-                    }     
-
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-                .finally(() => {
-                    this.drawComponent();
-                });
-        } else {
             this.drawComponent();
         }
     }
@@ -801,17 +811,41 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     }
 
     // Combobox for journey creation
-
     get options() {
         return [
-            { label: this.journeyGuidTypeName, value: 'singleSnd' },
-            { label: this.journeyGuid2TypeName, value: 'emailAndSMS' },
-            { label: this.journeyGuid3TypeName, value: 'multiEmail' },
+            { label: this.journeyGuidTypeName, value: '1' },
+            { label: this.journeyGuid2TypeName, value: '2' },
+            { label: this.journeyGuid3TypeName, value: '3' },
         ];
     }
 
+    // Combobox change event
     handleChange(event) {
-        this.value = event.detail.value;
+
+        //Store Journey Type
+        this.journeyType = event.detail.value;
+
+        //Debug
+        //console.log("Journey Type is " + this.journeyType);
+
+        //Set GUID appropriately
+        switch(Number(this.journeyType)) {
+            case 1:
+                this.journeyGuidToLoad = this.journeyGuid;
+                //console.log("Journey Guid is set to " + this.journeyGuid);
+                break;
+            case 2:
+                this.journeyGuidToLoad = this.journeyGuid2;
+                //console.log("Journey Guid is set to " + this.journeyGuid2);
+                break;
+            case 3:
+                this.journeyGuidToLoad = this.journeyGuid3;
+                //console.log("Journey Guid is set to " + this.journeyGuid3);
+                break;
+        }
+
+        //Debug
+        //console.log('journeyGuidToLoad is set to ' + this.journeyGuidToLoad);
     }
 
 
@@ -828,10 +862,19 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     // Create the desired journey
     createJourney() {
                 
+        //Draw the journey
         this.getJsonSpec();
 
         //Close Modal
         this.creatingJourney = false;
+
+    }
+
+    // Create the desired journey
+    refreshJourney() {
+            
+        //Draw the journey
+        this.getJsonSpec();
 
     }
 
