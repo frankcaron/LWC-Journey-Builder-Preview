@@ -387,7 +387,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             
 
             //Debug
-            console.log("Iterationg through activities to create paths");
+            //console.log("Iterationg through activities to create paths");
 
             //Find next event in chain by going through outcomes
             for (let i = 0; i < activityArray.length; i++) {
@@ -553,7 +553,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 //console.log("Current on branch down  " + branchDownCounter);
                 //console.log("Evaluating activity at step " + pathStep + " and type " + currentActivityType);
                 
-                if (currentActivityType.includes("Decision") || currentActivityType.includes("Split")) {
+                if (currentActivityType.toLowerCase().includes("decision") || currentActivityType.toLowerCase().includes("split")) {
 
                     // Debug
                     //console.log("Drawing decision activity for " + currentActivity.name);
