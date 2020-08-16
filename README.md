@@ -24,7 +24,9 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
     * `AUTH_URL__c`
     * `REST_URL__c`
 * Add the `lwcJourneyBuilderPreview` component to your desired page
-* Configure the component's attributes to feed in the Journey ID and URLs for your Marketing Cloud instance
+* Configure the component's attributes to feed in the Journey ID and Journey type names for your Marketing Cloud instance
+    * The three attributes allow you to populate the Journey GUIDs and friendly names that are used when you click the "Create Journey" button
+        * Each set corresponds with one drop-down selection item
 
 ## To Do
 * Fix up the drawing to accomodate more variations of how specs generate in the real world
