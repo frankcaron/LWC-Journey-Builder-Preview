@@ -13,14 +13,16 @@
         <target>lightningCommunity__Default</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__FlowScreen">
-            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  /> 
-        </targetConfig>
-        <targetConfig targets="lightning__RecordPage,lightning__AppPage, lightning__HomePage">
-            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  />
-        </targetConfig>
-        <targetConfig targets="lightningCommunity__Default">
-            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve" label="The GUID of the Journey in Marketing Cloud"  />
+        <targetConfig targets="lightning__FlowScreen,lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightningCommunity__Default">
+            <property name="journeyGuid" type="String" description="Paste in the GUID for the journey that you want to retrieve for the first dropdown in the creation screen" label="#1 Journey GUID"  />
+            <property name="journeyGuidTypeName" type="String" description="The name in the drop-down for the when you click 'Create New Journey' for this particular journey." label="#1 Journey Type"  />
+
+            <property name="journeyGuid2" type="String" description="Paste in the GUID for the journey that you want to retrieve for the second dropdown in the creation screen" label="#2 Journey GUID"  />
+            <property name="journeyGuid2TypeName" type="String" description="The name in the drop-down for the when you click 'Create New Journey' for this particular journey." label="#2 Journey Type"  />
+            
+            <property name="journeyGuid3" type="String" description="Paste in the GUID for the journey that you want to retriev for the third dropdown in the creation screen" label="#3 Journey GUID"  /> 
+            <property name="journeyGuid3TypeName" type="String" description="The name in the drop-down for the when you click 'Create New Journey' for this particular journey." label="#3 Journey Type"  />
+            
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

@@ -4,9 +4,24 @@ import getSpec from '@salesforce/apex/retrieveMCJourneySpec.getSpec';
 
 export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningElement) {
 
-    // Properties
+    // Component Properties
     @api
     journeyGuid = '';
+
+    @api
+    journeyGuidTypeName = '';
+
+    @api
+    journeyGuid2 = '';
+
+    @api
+    journeyGuid2TypeName = '';
+
+    @api
+    journeyGuid3 = '';
+
+    @api
+    journeyGuid3TypeName = '';
 
     @track
     creatingJourney = false;
@@ -250,7 +265,11 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Otherwise, return the real one
-        return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23' + guid + '/v';
+        if (guid) {
+            return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/%23' + guid + '/v';
+        }
+
+        return 'https://mc.s4.exacttarget.com/cloud/#app/Journey%20Builder/';
     }
 
     //Function to navigate on the edit button click
@@ -785,9 +804,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
     get options() {
         return [
-            { label: 'Single Send', value: 'singleSend' },
-            { label: 'Email and SMS Split', value: 'emailSplit' },
-            { label: 'Multi-email Journey', value: 'journey' },
+            { label: this.journeyGuidTypeName, value: 'singleSnd' },
+            { label: this.journeyGuid2TypeName, value: 'emailAndSMS' },
+            { label: this.journeyGuid3TypeName, value: 'multiEmail' },
         ];
     }
 
@@ -808,6 +827,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
     // Create the desired journey
     createJourney() {
+                
         this.getJsonSpec();
 
         //Close Modal
