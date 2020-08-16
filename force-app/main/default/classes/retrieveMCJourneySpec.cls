@@ -5,7 +5,7 @@ public with sharing class retrieveMCJourneySpec {
   }
 
   // Public method to retrieve the Journey JSON spec
-  @AuraEnabled(cacheable=true)
+  @AuraEnabled(cacheable=false)
   public static String getSpec(String guid) {
       
       // Set up strings

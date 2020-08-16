@@ -351,7 +351,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Only Decisions
         let journeyDecisionPoints = new Set();
         for (let activity of activitySet) {
-            if (activity.type.includes("Split") || activity.type.includes("Decision")) {
+            console.log(activity.type);
+            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) {
                 journeyDecisionPoints.add(activity);
                 numPaths += activity.outcomes.length
             }
@@ -371,6 +372,11 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         console.log("Number of total distinct paths: " + numPaths);
         console.log("Number of total distinct ends: " + numEndPoints);
         console.log("Number of distinct events: " + numShapes);
+        console.log("Full set of distinct activities:");
+        console.log(journeyActivityPoints);
+
+        //Define Map For Remaining Events
+        let remainingActivities = new Set(journeyActivityPoints);
 
         //Use Exits to work back to fill paths
         for (let exit of journeyEndPoints) {
@@ -378,14 +384,27 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             let pathArray = [];
             let previousEventKey = exit.key;
             let activityArray = Array.from(journeyActivityPoints); 
+            
+
+            //Debug
+            console.log("Iterationg through activities to create paths");
 
             //Find next event in chain by going through outcomes
             for (let i = 0; i < activityArray.length; i++) {
+                
+                // Map out the outcomes that link together one by one
                 let outcomes = activityArray[i].outcomes;
                 for (let outcome of outcomes) {
                     if (outcome.next == previousEventKey) {
+
+                        //Push the matching activity to the path array
                         pathArray.push(activityArray[i]);
                         previousEventKey = activityArray[i].key;
+
+                        //Pop the corresponding event off the tracking set
+                        remainingActivities.delete(activityArray[i]);
+
+                        //Reset the path crawl
                         i = 0;
                     }
                 }
@@ -400,6 +419,15 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
             //Add entire array to the path
             drawPaths.push(pathArray);
+        }
+
+        // Add left overs to the first path
+        console.log("Letover activities are... ");
+        console.log(remainingActivities);
+        let remainingActivityArray = Array.from(remainingActivities);
+
+        for (let i = 0; i < drawPaths.length; i++) {
+            drawPaths[i].splice(1, 0, ...remainingActivityArray);
         }
 
         //Debug
