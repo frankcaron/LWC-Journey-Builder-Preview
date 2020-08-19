@@ -13,18 +13,20 @@ public with sharing class retrieveMCJourneySpec {
       String MARKETING_CLOUD_REST_URL = '';
       String clientId = '';
       String clientSecret = '';
+      String accountId = '';
       String token = '';
       String spec = '';
       
       // Fetch the credentials for the API from the Custom Metadata Type
-      Marketing_Cloud_Credential__mdt[] credentials = [SELECT Client_ID__c, Client_Secret__c, REST_URL__c, AUTH_URL__c, DeveloperName FROM Marketing_Cloud_Credential__mdt WHERE DeveloperName = 'MCCConfig'];
+      Marketing_Cloud_Credential__mdt[] credentials = [SELECT Client_ID__c, MID__c, Client_Secret__c, REST_URL__c, AUTH_URL__c, DeveloperName FROM Marketing_Cloud_Credential__mdt WHERE DeveloperName = 'MCCConfig'];
       clientId = credentials[0].Client_ID__c;
       clientSecret = credentials[0].Client_Secret__c;
+      accountId = credentials[0].MID__c;
       MARKETING_CLOUD_AUTH_URL = credentials[0].AUTH_URL__c + 'v2/token';
       MARKETING_CLOUD_REST_URL = credentials[0].REST_URL__c + 'interaction/v1/interactions/'; 
       
       //Debug
-      System.debug('DEBUG: Credentials nabbed. Value = ' + clientId + ' ' + clientSecret);
+      System.debug('DEBUG: Credentials nabbed. Value = ' + clientId + ' ' + clientSecret + ' ' + accountId);
       System.debug('DEBUG: URLs set. Value = ' + MARKETING_CLOUD_AUTH_URL + ' ' + MARKETING_CLOUD_REST_URL);
       
       //Get OAuth token 
@@ -37,7 +39,8 @@ public with sharing class retrieveMCJourneySpec {
       r.setBody(JSON.serialize( new Map<String, String>{
                 'grant_type' => 'client_credentials',
                 'client_id' => clientId,
-                'client_secret' => clientSecret
+                'client_secret' => clientSecret,
+                'account_id' => accountId
             }));
       HttpResponse res = h.send(r);
       token = ((Map<String, String>) JSON.deserialize(res.getBody(), Map<String, String>.class)).get( 'access_token' );

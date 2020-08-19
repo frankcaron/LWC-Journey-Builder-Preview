@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <componentInstances>
+            <componentInstanceProperties>
+                <name>journeyGuid</name>
+                <value>6dbfe121-03fb-45c3-8635-eab60efdd108</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>journeyGuid2TypeName</name>
+                <value>Two Type</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>journeyGuid3TypeName</name>
+                <value>Three Type</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>journeyGuidTypeName</name>
+                <value>Test Type</value>
+            </componentInstanceProperties>
+            <componentName>lwcJourneyBuilderPreview</componentName>
+        </componentInstances>
+        <componentInstances>
+            <componentName>home:heroChart</componentName>
+        </componentInstances>
+        <mode>Replace</mode>
+        <name>top</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <componentInstances>
+            <componentName>home:eventContainer</componentName>
+        </componentInstances>
+        <componentInstances>
+            <componentName>home:recentRecordContainer</componentName>
+        </componentInstances>
+        <mode>Replace</mode>
+        <name>bottomLeft</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <componentInstances>
+            <componentName>runtime_sales_activities:todayTaskContainer</componentName>
+        </componentInstances>
+        <componentInstances>
+            <componentName>home:topDealsContainer</componentName>
+        </componentInstances>
+        <mode>Replace</mode>
+        <name>bottomRight</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <componentInstances>
+            <componentName>home:assistant</componentName>
+        </componentInstances>
+        <mode>Replace</mode>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Home Page Default</masterLabel>
+    <parentFlexiPage>home__desktopDefault</parentFlexiPage>
+    <template>
+        <name>home:desktopTemplate</name>
+    </template>
+    <type>HomePage</type>
+</FlexiPage>
