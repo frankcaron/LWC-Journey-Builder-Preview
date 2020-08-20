@@ -554,8 +554,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const shapePadding = 5;
 
         const fontMarginTop = 10;
-        const fontHeader = 'bold 17px Arial'
-        const fontBody = '14px Arial'
+        const fontHeader = 'bold 17px Salesforce Sans, Arial, sans-serif'
+        const fontBody = '14px Salesforce Sans, Arial, sans-serif'
         const fontColor = '#000';
 
         const connectorColor = "#666";
@@ -568,6 +568,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const decisionColor = '#ec8b23';
         const splitColor = '#ec8b23'; //'#97a4b1';
         const restColor = '#2671B9';
+        const restFontColor = '#FFF';
 
         const descriptionWidth = 150;
         const descriptionHeight = 150;
@@ -738,7 +739,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                         canvasContext.fillStyle = restColor;
                         canvasContext.fill();
                         canvasContext.font = fontHeader;
-                        canvasContext.fillStyle = fontColor;
+                        canvasContext.fillStyle = restFontColor;
                         canvasContext.textAlign = "center";
                         canvasContext.fillText("REST", nextEventX, nextEventY + shapeSize / 2 + fontMarginTop / 1.5);
     
