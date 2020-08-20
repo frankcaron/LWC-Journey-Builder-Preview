@@ -351,7 +351,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Only Decisions
         let journeyDecisionPoints = new Set();
         for (let activity of activitySet) {
-            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) || activity.outcomes[0].branchResult {
+            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision") || activity.outcomes[0].arguments.branchResult) {
                 journeyDecisionPoints.add(activity);
                 numPaths += activity.outcomes.length
             }
@@ -395,12 +395,12 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 for (let outcome of outcomes) {
                     if (outcome.next == previousEventKey) {
 
+                        //Debug
+                        console.log("Linking up " + activityArray[i].key + " and " + previousEventKey);
+
                         //Push the matching activity to the path array
                         pathArray.push(activityArray[i]);
                         previousEventKey = activityArray[i].key;
-
-                        //Pop the corresponding event off the tracking set
-                        remainingActivities.delete(activityArray[i]);
 
                         //Reset the path crawl
                         i = 0;
@@ -414,6 +414,11 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             //Add entry and exit activity to the end
             pathArray.unshift(journeyEntry);
             pathArray.push(exit);
+
+            //Gather up leftover activities
+            for (let j = 0; j < pathArray.length; j++) {
+                remainingActivities.delete(pathArray[j]);
+            }
 
             //Add entire array to the path
             drawPaths.push(pathArray);
