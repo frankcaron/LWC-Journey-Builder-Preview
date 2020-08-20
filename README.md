@@ -30,4 +30,5 @@ This component ingests [a JSON spec of a Journey via the Marketing Cloud APIs](h
         * Each set corresponds with one drop-down selection item
 
 ## To Do
-* Fix up the drawing to accomodate more variations of how specs generate in the real world
+* Continue to refine the drawing to accomodate snowflake cases in the JSON spec
+* Write the value to a record to allow for loading it without hitting "Create" again.
