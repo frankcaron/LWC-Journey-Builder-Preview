@@ -351,8 +351,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Only Decisions
         let journeyDecisionPoints = new Set();
         for (let activity of activitySet) {
-            console.log(activity.type);
-            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) {
+            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) || activity.outcomes[0].branchResult {
                 journeyDecisionPoints.add(activity);
                 numPaths += activity.outcomes.length
             }
@@ -361,7 +360,6 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Only Exits
         let journeyEndPoints = new Set();
         for (let activity of activitySet) {
-            console.log(activity.outcomes);
             if (!activity.outcomes || !activity.outcomes[0].next) {
                 journeyEndPoints.add(activity);
             }
@@ -422,15 +420,94 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         // Add left overs to the first path
-        console.log("Letover activities are... ");
-        console.log(remainingActivities);
         let remainingActivityArray = Array.from(remainingActivities);
+        let finalLeftoverActivities = Array.from(remainingActivities);
+        console.log("Letover activities are... ");
+        console.log(remainingActivityArray);
 
-        for (let i = 0; i < drawPaths.length; i++) {
-            drawPaths[i].splice(1, 0, ...remainingActivityArray);
+        // For each of the remaining items... 
+        for (let a = 0; a < remainingActivityArray.length; a++) {
+
+            //Debug
+            console.log ("Attempting to place activity " + remainingActivityArray[a].key);
+
+            //Go through each full path
+            for (let b = 0; b < drawPaths.length; b++) {
+                let currentPath = drawPaths[b];
+
+                //Debug
+                console.log("Working on current path #" + b);
+                console.log(currentPath);
+
+                //In each path, go through each item
+                for (let c = 0; c < currentPath.length; c++) { 
+                    let currentPathItem = currentPath[c];
+
+                    //Debug
+                    console.log("Working on current item #" + c);
+                    console.log(currentPathItem.key);
+
+                    //If we find a duplicate, break.
+                    if (remainingActivityArray[a].key == currentPathItem.key) {
+                        console.log("Found a dupe, so skipping");
+
+                        //Kill leftover
+                        finalLeftoverActivities[a] = null;
+
+                        //Escape the loop
+                        d = currentPathItem.outcomes.legth + 1;
+                        c = currentPath.length + 1;
+                        break;
+                    }
+
+                    //If the current item has outcomes
+                    if(currentPathItem.outcomes) {
+
+                        //Go through each outcome
+                        for (let d = 0; d < currentPathItem.outcomes.length; d++) {
+
+                            //If the next of the current outcome matches the key of a remaining activity
+                            if (currentPathItem.outcomes[d].next == remainingActivityArray[a].key) {
+
+                                //Debug
+                                console.log("Current path is...");
+                                console.log(currentPath);
+
+                                //Splice it into the path
+                                currentPath.splice(c + 1, 0, remainingActivityArray[a]);
+                                finalLeftoverActivities[a] = null;
+
+                                //Escape the loop
+                                d = currentPathItem.outcomes.legth + 1;
+                                c = currentPath.length + 1;
+                                b = drawPaths.length + 1;
+
+                                //Debug
+                                console.log ("Placed activitiy " + remainingActivityArray[a].key + " ahead of " + currentPathItem.key);
+                                console.log(currentPath);
+                                console.log ("Breaking the loop...");
+
+                            }
+                        }
+                    } 
+                }
+            }
+        }
+
+        //Kill all null arrays from the final activities
+        let filteredFinalActivities = finalLeftoverActivities.filter(function (el) {
+            return el != null;
+        });
+        console.log("There is " + filteredFinalActivities.length + " remaining leftover.")
+
+        //Go through each full path
+        for (let b = 0; b < drawPaths.length; b++) {
+            let currentPath = drawPaths[b];
+            currentPath.splice(1, 0, ...filteredFinalActivities);
         }
 
         //Debug
+        console.log("All final draw paths");
         console.log(drawPaths);
 
         //----------------------

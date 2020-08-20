@@ -4,11 +4,19 @@
         <componentInstances>
             <componentInstanceProperties>
                 <name>journeyGuid</name>
-                <value>6dbfe121-03fb-45c3-8635-eab60efdd108</value>
+                <value>e5c1b78a-cf68-4e9d-aa4b-13de8aceab85</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>journeyGuid2</name>
+                <value>d5c45925-f306-46af-82c3-b1fedc7fb946</value>
             </componentInstanceProperties>
             <componentInstanceProperties>
                 <name>journeyGuid2TypeName</name>
                 <value>Two Type</value>
+            </componentInstanceProperties>
+            <componentInstanceProperties>
+                <name>journeyGuid3</name>
+                <value>6dbfe121-03fb-45c3-8635-eab60efdd108</value>
             </componentInstanceProperties>
             <componentInstanceProperties>
                 <name>journeyGuid3TypeName</name>
