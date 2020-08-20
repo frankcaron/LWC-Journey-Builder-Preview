@@ -325,11 +325,16 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //Grab spec and start parsing it
         //----------------------
 
+        //Debug 
+        console.log("Beginning to draw journey...");
+
         //Entry Events
         let journeyEntry = "";
         if (this.jsonSpec.triggers[0] != undefined) {
             journeyEntry = this.jsonSpec.triggers[0];
         }
+
+        console.log("Checked for entry events...");
 
         //All Activities
         let journeyActivities = this.jsonSpec.activities;
@@ -340,6 +345,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
         numShapes = eventList.size;
 
+        console.log("Checked for normal activities...");
+
         //Only Non-Exits
         let journeyActivityPoints = new Set();
         for (let activity of activitySet) {
@@ -348,14 +355,31 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             }
         }
 
+        console.log("Checked for non-exits...");
+
         //Only Decisions
         let journeyDecisionPoints = new Set();
         for (let activity of activitySet) {
-            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision") || activity.outcomes[0].arguments.branchResult) {
+
+            // Catch standard decisions
+            if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) {
                 journeyDecisionPoints.add(activity);
-                numPaths += activity.outcomes.length
+                numPaths += activity.outcomes.length;
+                break;
             }
+
+            //Catch custom decisions
+            if (activity.type.toLowerCase().includes("rest")) {
+                if (activity.outcomes[0].arguments) {
+                    journeyDecisionPoints.add(activity);
+                    numPaths += activity.outcomes.length;
+                    break;
+                }
+            }
+
         }
+
+        console.log("Checked for decisions...");
 
         //Only Exits
         let journeyEndPoints = new Set();
@@ -365,6 +389,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             }
         }
         numEndPoints = journeyEndPoints.size;
+
+        console.log("Checked for exits...");
 
         //Debug
         console.log("Number of total distinct paths: " + numPaths);
@@ -529,7 +555,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         const fontMarginTop = 10;
         const fontHeader = 'bold 17px Arial'
-        const fontBody = '15px Arial'
+        const fontBody = '14px Arial'
         const fontColor = '#000';
 
         const connectorColor = "#666";
@@ -541,12 +567,13 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const activityColor = '#52c7bc';
         const decisionColor = '#ec8b23';
         const splitColor = '#97a4b1';
+        const restColor = '#2671B9';
 
         const descriptionWidth = 150;
         const descriptionHeight = 150;
         const descriptionPadding = 5;
         const descriptionLineHeight = 20;
-        const descriptionFillColor = '#FFF'
+        const descriptionFillColor = '#FFFFFFEE'
         const descriptionBorderColor = '#BBB'
 
         //----------------------
@@ -577,9 +604,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             canvasContext.closePath();
             canvasContext.fillStyle = descriptionFillColor;
             canvasContext.fill();
-            canvasContext.lineWidth = 1;
-            canvasContext.strokeStyle = descriptionBorderColor;
-            canvasContext.stroke();
+            //canvasContext.lineWidth = 1;
+            //canvasContext.strokeStyle = descriptionBorderColor;
+            //canvasContext.stroke();
 
             //Draw Entry Event Text
             let entryEventDescriptionTextX = entryEventDescriptionX + descriptionWidth / 1.9;
@@ -651,12 +678,12 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     canvasContext.lineTo(nextEventX - shapeSize / 2, nextEventY + shapeSize / 2);
                     canvasContext.closePath();
 
-                    canvasContext.fillStyle = currentActivityType.includes("Split") ? splitColor : decisionColor;
+                    canvasContext.fillStyle = currentActivityType.toLowerCase().includes("split") ? splitColor : decisionColor;
                     canvasContext.fill();
                     canvasContext.font = fontHeader;
                     canvasContext.fillStyle = fontColor;
                     canvasContext.textAlign = "center";
-                    canvasContext.fillText(currentActivityType.includes("Split") ? "Split" : "Decision", nextEventX, nextEventY + shapeSize / 2 + fontMarginTop / 1.5);
+                    canvasContext.fillText(currentActivityType.toLowerCase().includes("split") ? "Split" : "Decision", nextEventX, nextEventY + shapeSize / 2 + fontMarginTop / 1.5);
 
                     //Draw Decision Box
                     let decisionEventDescriptionX = nextEventX - descriptionWidth / 2;
@@ -667,9 +694,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     canvasContext.closePath();
                     canvasContext.fillStyle = descriptionFillColor;
                     canvasContext.fill();
-                    canvasContext.lineWidth = 1;
-                    canvasContext.strokeStyle = descriptionBorderColor;
-                    canvasContext.stroke();
+                    //canvasContext.lineWidth = 1;
+                    //canvasContext.strokeStyle = descriptionBorderColor;
+                    //canvasContext.stroke();
 
                     //Draw Entry Event Text
                     let decisionEventDescriptionTextX = nextEventX;
@@ -691,6 +718,63 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
                     //Iterate
                     branchRightCounter++;
+
+                } else if (currentActivityType.toLowerCase().includes("rest")) {
+
+                        // Debug
+                        //console.log("Drawing decision activity for " + currentActivity.name);
+                        
+                        // Draw Decisions
+                        let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) + shapeSpacing / 4;
+                        let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
+    
+                        canvasContext.beginPath();
+                        canvasContext.moveTo(nextEventX, nextEventY);
+                        canvasContext.lineTo(nextEventX + shapeSize / 2, nextEventY + shapeSize / 2);
+                        canvasContext.lineTo(nextEventX, nextEventY + shapeSize);
+                        canvasContext.lineTo(nextEventX - shapeSize / 2, nextEventY + shapeSize / 2);
+                        canvasContext.closePath();
+    
+                        canvasContext.fillStyle = restColor;
+                        canvasContext.fill();
+                        canvasContext.font = fontHeader;
+                        canvasContext.fillStyle = fontColor;
+                        canvasContext.textAlign = "center";
+                        canvasContext.fillText("REST", nextEventX, nextEventY + shapeSize / 2 + fontMarginTop / 1.5);
+    
+                        //Draw Decision Box
+                        let decisionEventDescriptionX = nextEventX - descriptionWidth / 2;
+                        let decisionEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
+    
+                        canvasContext.beginPath();
+                        canvasContext.rect(decisionEventDescriptionX, decisionEventDescriptionY, descriptionWidth, descriptionHeight);
+                        canvasContext.closePath();
+                        canvasContext.fillStyle = descriptionFillColor;
+                        canvasContext.fill();
+                        //canvasContext.lineWidth = 1;
+                        //canvasContext.strokeStyle = descriptionBorderColor;
+                        //canvasContext.stroke();
+    
+                        //Draw Entry Event Text
+                        let decisionEventDescriptionTextX = nextEventX;
+                        let decisionEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
+    
+                        canvasContext.fillStyle = fontColor;
+                        canvasContext.textAlign = "center";
+                        canvasContext.font = fontHeader;
+                        canvasContext.fillText("Name:", decisionEventDescriptionTextX, decisionEventDescrtipionTextY);
+                        canvasContext.font = fontBody;
+                        this.wrapText(canvasContext, currentActivity.key, decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+                        canvasContext.font = fontHeader;
+                        canvasContext.fillText("Description:", decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight * 3);
+                        canvasContext.font = fontBody;
+                        this.wrapText(canvasContext, currentActivity.name, decisionEventDescriptionTextX, decisionEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+    
+                        //Add to list
+                        eventList.set(currentActivity.key, {"x": nextEventX, "y": nextEventY});
+    
+                        //Iterate
+                        branchRightCounter++;
 
                 } else {
 
@@ -719,9 +803,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     canvasContext.closePath();
                     canvasContext.fillStyle = descriptionFillColor;
                     canvasContext.fill();
-                    canvasContext.lineWidth = 1;
-                    canvasContext.strokeStyle = descriptionBorderColor;
-                    canvasContext.stroke();
+                    //canvasContext.lineWidth = 1;
+                    //canvasContext.strokeStyle = descriptionBorderColor;
+                    //canvasContext.stroke();
 
                     //Draw Entry Event Text
                     let endpointEventDescriptionTextX = nextEventX + descriptionWidth / 3;
@@ -751,7 +835,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             }
 
             //Iterate
-            branchDownCounter++;
+            branchDownCounter += .8;
         }
 
         //----------------------
