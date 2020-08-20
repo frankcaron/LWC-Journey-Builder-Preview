@@ -46,8 +46,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
     // Draw the componentry once the spec is loaded
     drawComponent() {
 
-        console.log("Checking spec before render");
-        console.log(this.jsonSpec);
+        //console.log("Checking spec before render");
+        //console.log(this.jsonSpec);
 
         //Set top level variables
         this.journeyId = this.jsonSpec.id;
@@ -326,7 +326,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         //----------------------
 
         //Debug 
-        console.log("Beginning to draw journey...");
+        //console.log("Beginning to draw journey...");
 
         //Entry Events
         let journeyEntry = "";
@@ -334,7 +334,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             journeyEntry = this.jsonSpec.triggers[0];
         }
 
-        console.log("Checked for entry events...");
+        //console.log("Checked for entry events...");
 
         //All Activities
         let journeyActivities = this.jsonSpec.activities;
@@ -345,7 +345,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
         numShapes = eventList.size;
 
-        console.log("Checked for normal activities...");
+        //console.log("Checked for normal activities...");
 
         //Only Non-Exits
         let journeyActivityPoints = new Set();
@@ -355,7 +355,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             }
         }
 
-        console.log("Checked for non-exits...");
+        //console.log("Checked for non-exits...");
 
         //Only Decisions
         let journeyDecisionPoints = new Set();
@@ -379,7 +379,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
         }
 
-        console.log("Checked for decisions...");
+        //console.log("Checked for decisions...");
 
         //Only Exits
         let journeyEndPoints = new Set();
@@ -390,14 +390,14 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
         numEndPoints = journeyEndPoints.size;
 
-        console.log("Checked for exits...");
+        //console.log("Checked for exits...");
 
         //Debug
-        console.log("Number of total distinct paths: " + numPaths);
-        console.log("Number of total distinct ends: " + numEndPoints);
-        console.log("Number of distinct events: " + numShapes);
-        console.log("Full set of distinct activities:");
-        console.log(journeyActivityPoints);
+        //console.log("Number of total distinct paths: " + numPaths);
+        //console.log("Number of total distinct ends: " + numEndPoints);
+        //console.log("Number of distinct events: " + numShapes);
+        //console.log("Full set of distinct activities:");
+        //console.log(journeyActivityPoints);
 
         //Define Map For Remaining Events
         let remainingActivities = new Set(journeyActivityPoints);
@@ -422,7 +422,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     if (outcome.next == previousEventKey) {
 
                         //Debug
-                        console.log("Linking up " + activityArray[i].key + " and " + previousEventKey);
+                        //console.log("Linking up " + activityArray[i].key + " and " + previousEventKey);
 
                         //Push the matching activity to the path array
                         pathArray.push(activityArray[i]);
@@ -453,34 +453,34 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         // Add left overs to the first path
         let remainingActivityArray = Array.from(remainingActivities);
         let finalLeftoverActivities = Array.from(remainingActivities);
-        console.log("Letover activities are... ");
-        console.log(remainingActivityArray);
+        //console.log("Letover activities are... ");
+        //console.log(remainingActivityArray);
 
         // For each of the remaining items... 
         for (let a = 0; a < remainingActivityArray.length; a++) {
 
             //Debug
-            console.log ("Attempting to place activity " + remainingActivityArray[a].key);
+            //console.log ("Attempting to place activity " + remainingActivityArray[a].key);
 
             //Go through each full path
             for (let b = 0; b < drawPaths.length; b++) {
                 let currentPath = drawPaths[b];
 
                 //Debug
-                console.log("Working on current path #" + b);
-                console.log(currentPath);
+                //console.log("Working on current path #" + b);
+                //console.log(currentPath);
 
                 //In each path, go through each item
                 for (let c = 0; c < currentPath.length; c++) { 
                     let currentPathItem = currentPath[c];
 
                     //Debug
-                    console.log("Working on current item #" + c);
-                    console.log(currentPathItem.key);
+                    //console.log("Working on current item #" + c);
+                    //console.log(currentPathItem.key);
 
                     //If we find a duplicate, break.
                     if (remainingActivityArray[a].key == currentPathItem.key) {
-                        console.log("Found a dupe, so skipping");
+                        //console.log("Found a dupe, so skipping");
 
                         //Kill leftover
                         finalLeftoverActivities[a] = null;
@@ -501,8 +501,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                             if (currentPathItem.outcomes[d].next == remainingActivityArray[a].key) {
 
                                 //Debug
-                                console.log("Current path is...");
-                                console.log(currentPath);
+                                //console.log("Current path is...");
+                                //console.log(currentPath);
 
                                 //Splice it into the path
                                 currentPath.splice(c + 1, 0, remainingActivityArray[a]);
@@ -514,9 +514,9 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                                 b = drawPaths.length + 1;
 
                                 //Debug
-                                console.log ("Placed activitiy " + remainingActivityArray[a].key + " ahead of " + currentPathItem.key);
-                                console.log(currentPath);
-                                console.log ("Breaking the loop...");
+                                //console.log ("Placed activitiy " + remainingActivityArray[a].key + " ahead of " + currentPathItem.key);
+                                //console.log(currentPath);
+                                //console.log ("Breaking the loop...");
 
                             }
                         }
@@ -529,7 +529,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         let filteredFinalActivities = finalLeftoverActivities.filter(function (el) {
             return el != null;
         });
-        console.log("There is " + filteredFinalActivities.length + " remaining leftover.")
+        //console.log("There is " + filteredFinalActivities.length + " remaining leftover.")
 
         //Go through each full path
         for (let b = 0; b < drawPaths.length; b++) {
@@ -538,8 +538,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Debug
-        console.log("All final draw paths");
-        console.log(drawPaths);
+        //console.log("All final draw paths");
+        //console.log(drawPaths);
 
         //----------------------
         //Start Drawing
@@ -665,7 +665,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 if (currentActivityType.toLowerCase().includes("decision") || currentActivityType.toLowerCase().includes("split")) {
 
                     // Debug
-                    console.log("Drawing decision activity for " + currentActivity.name);
+                    //console.log("Drawing decision activity for " + currentActivity.name);
                     
                     // Draw Decisions
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) + shapeSpacing / 4;
@@ -867,18 +867,18 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
 
                 let previousActivityType = currentPath[pathStep - 1].type;
 
-                console.log(drawnPathItems);
+                //console.log(drawnPathItems);
 
                 //Ensure we're not duplicating efforts, and if we are, move onto the next node
                 if (drawnPathItems.has(currentActivityKey)) { 
-                    console.log("Repeating a drawn activity, so skipping");
+                    //console.log("Repeating a drawn activity, so skipping");
                     continue; 
                 } else {
                     drawnPathItems.set(currentActivityKey, currentPath[pathStep]);
                 }
 
                 //Debug
-                console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
+                //console.log ("Current Activity: " + currentActivityKey + " Previous Activity: " + previousActivityKey);
 
                 if (previousActivityType == "Event") {
                     // Draw Elbow Connector between the two
