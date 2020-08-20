@@ -621,7 +621,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             canvasContext.font = fontHeader;
             canvasContext.fillText("Description:", entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 3);
             canvasContext.font = fontBody;
-            this.wrapText(canvasContext, journeyEntry.name, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+            this.wrapText(canvasContext, journeyEntry.type, entryEventDescriptionTextX, entryEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
 
             //Add to list
             eventList.set(journeyEntry.key, {"x": entryEventX, "y": entryEventY});
