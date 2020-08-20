@@ -566,7 +566,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const activityEntryColor = '#52c7bc';
         const activityColor = '#52c7bc';
         const decisionColor = '#ec8b23';
-        const splitColor = '#97a4b1';
+        const splitColor = '#ec8b23'; //'#97a4b1';
         const restColor = '#2671B9';
 
         const descriptionWidth = 150;
@@ -665,7 +665,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 if (currentActivityType.toLowerCase().includes("decision") || currentActivityType.toLowerCase().includes("split")) {
 
                     // Debug
-                    //console.log("Drawing decision activity for " + currentActivity.name);
+                    console.log("Drawing decision activity for " + currentActivity.name);
                     
                     // Draw Decisions
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) + shapeSpacing / 4;
@@ -860,7 +860,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 let currentActivityX = eventList.get(currentActivityKey).x;
                 let currentyActivityY = eventList.get(currentActivityKey).y;
 
-                let previousActivityKey = currentPath[pathStep - 1].key;
+                let previousActivity = currentPath[pathStep - 1];
+                let previousActivityKey = previousActivity.key;
                 let previousActivityX = eventList.get(previousActivityKey).x;
                 let previousActivityY = eventList.get(previousActivityKey).y;
 
@@ -887,10 +888,13 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
                     continue;
                 } else if (previousActivityType == "Audience") {
-
-                    //Debug
-                    console.log("Drawing connector back to the Audience Trigger Event...");
-
+                    // Draw Elbow Connector between the two
+                    connectorType = "straight";
+                    let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
+                    let end = { "x": previousActivityX, "y": previousActivityY };
+                    this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
+                    continue;
+                } else if (previousActivityKey.toLowerCase() == "trigger") {
                     // Draw Elbow Connector between the two
                     connectorType = "straight";
                     let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
@@ -900,8 +904,26 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                 }
 
                 if (currentBranchDown >= 1) {
-                    // Draw Elbow Connector between the two
-                    connectorType = "bottomLeft";
+
+                    // Draw straight line by default
+                    connectorType = "straight";
+
+                    // Draw Elbow Connector back to decision
+                    if(previousActivityType.toLowerCase().includes("decision") || previousActivityType.toLowerCase().includes("split")) {
+                        // Draw Elbow Connector back to decision
+                        connectorType = "bottomLeft";
+                    } 
+
+                    // Draw Elbow Connector back to REST branch
+                    if(previousActivity.outcomes) {
+                        if(previousActivity.outcomes[0].arguments){
+                            if(previousActivity.outcomes[0].arguments.branchResult) {
+                                connectorType = "bottomLeft";
+                            }
+                        }
+                    } 
+
+                    //Get to drawning
                     let start = { "x": currentActivityX + shapeSize / 2 + shapePadding, "y": currentyActivityY + shapeSize / 2 };
                     let end = { "x": previousActivityX, "y": previousActivityY + shapeSize / 2 };
                     this.drawElbow(canvasContext, connectorType, start, end, connectorRadius, connectorColor, connectorWidth );
