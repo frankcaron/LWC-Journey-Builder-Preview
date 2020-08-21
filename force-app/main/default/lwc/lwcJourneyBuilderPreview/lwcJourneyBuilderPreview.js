@@ -346,6 +346,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         numShapes = eventList.size;
 
         //console.log("Checked for normal activities...");
+        //console.log(numShapes + " activities found");
+        //console.log(activitySet);
 
         //Only Non-Exits
         let journeyActivityPoints = new Set();
@@ -356,30 +358,37 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //console.log("Checked for non-exits...");
+        //console.log(activitySet);
 
         //Only Decisions
         let journeyDecisionPoints = new Set();
         for (let activity of activitySet) {
 
+            //console.log("Checking " + activity.key + " " + activity.type);
+
             // Catch standard decisions
             if (activity.type.toLowerCase().includes("split") || activity.type.toLowerCase().includes("decision")) {
                 journeyDecisionPoints.add(activity);
                 numPaths += activity.outcomes.length;
-                break;
-            }
+            } 
 
             //Catch custom decisions
             if (activity.type.toLowerCase().includes("rest")) {
+
+                //console.log("Checking " + activity.key + " for outcomes");
+
                 if (activity.outcomes[0].arguments) {
                     journeyDecisionPoints.add(activity);
                     numPaths += activity.outcomes.length;
-                    break;
+
+                    //console.log(activity.key + " had " + activity.outcomes.length + " outcomes");
                 }
             }
 
         }
 
         //console.log("Checked for decisions...");
+        //console.log(journeyDecisionPoints);
 
         //Only Exits
         let journeyEndPoints = new Set();
@@ -391,6 +400,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         numEndPoints = journeyEndPoints.size;
 
         //console.log("Checked for exits...");
+        //console.log(journeyEndPoints);
 
         //Debug
         //console.log("Number of total distinct paths: " + numPaths);
@@ -408,34 +418,60 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             let pathArray = [];
             let previousEventKey = exit.key;
             let activityArray = Array.from(journeyActivityPoints); 
-            
+            let resetActivityCrawl = false;
+            let secondPass = false;
 
             //Debug
-            //console.log("Iterationg through activities to create paths");
+            //console.log("Iterating through activities to create paths");
 
             //Find next event in chain by going through outcomes
             for (let i = 0; i < activityArray.length; i++) {
+
+                //If we found a linkage on the previous run, reset the loop to crawl again.
+                if (resetActivityCrawl){
+                    i = 0;
+                    resetActivityCrawl = false;
+                }
                 
                 // Map out the outcomes that link together one by one
                 let outcomes = activityArray[i].outcomes;
                 for (let outcome of outcomes) {
+
+                    //console.log("Checking out the outcome " + outcome.next + " for activity " + activityArray[i].key);
+
                     if (outcome.next == previousEventKey) {
 
                         //Debug
-                        //console.log("Linking up " + activityArray[i].key + " and " + previousEventKey);
+                        //console.log("Linking up " + activityArray[i].key + " to " + previousEventKey);
 
                         //Push the matching activity to the path array
                         pathArray.push(activityArray[i]);
                         previousEventKey = activityArray[i].key;
 
+                        //console.log("Now looking for the node that links to " + previousEventKey);
+                        //console.log("PathArray:");
+                        //console.log(pathArray);
+
                         //Reset the path crawl
-                        i = 0;
+                        resetActivityCrawl = true;
                     }
+                }
+
+                //Loop around again for one more full go after doing the initial linking to catch decisions
+                //at the front that may have been missed when there are many branches    
+                if (!secondPass && i >= activityArray.length - 1 ) {
+                    secondPass = true;
+                    i = 0;
+                    resetActivityCrawl = true;
+                    //console.log("Going back for one more pass before we call it quits");
                 }
             }
 
             //Reverse Array
             pathArray.reverse();
+
+            //console.log("Path array is now");
+            //console.log(pathArray);
 
             //Add entry and exit activity to the end
             pathArray.unshift(journeyEntry);
@@ -538,8 +574,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Debug
-        console.log("All final draw paths");
-        console.log(drawPaths);
+        //console.log("All final draw paths");
+        //console.log(drawPaths);
 
         //----------------------
         //Start Drawing
@@ -902,7 +938,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
             }
 
             //Iterate
-            branchDownCounter += .8;
+            branchDownCounter += .9;
         }
 
         //----------------------
