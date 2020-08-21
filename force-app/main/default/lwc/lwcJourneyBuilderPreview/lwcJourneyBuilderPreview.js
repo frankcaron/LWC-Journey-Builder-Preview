@@ -838,13 +838,27 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) ;
                     let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
 
+                    //Name
+                    let friendlyName = currentActivityType.toLowerCase();
+                    
+                    if (friendlyName.includes("email")) {
+                        friendlyName = "Email";
+                    } else if (friendlyName.includes("sms")) {
+                        friendlyName = "SMS";
+                    } else if (friendlyName.includes("push")) {
+                        friendlyName = "Push";
+                    } else {
+                        friendlyName = "Activity";
+                    }
+
+                    //Draw shae
                     this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
                     canvasContext.fillStyle = activityEntryColor;
                     canvasContext.fill();
                     canvasContext.font = fontHeader;
                     canvasContext.fillStyle = fontColor;
                     canvasContext.textAlign = "center";
-                    canvasContext.fillText("Activity", nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
+                    canvasContext.fillText(friendlyName, nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
 
 
                     //Draw Entry Event Box
