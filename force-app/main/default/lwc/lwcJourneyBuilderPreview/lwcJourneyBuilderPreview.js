@@ -786,7 +786,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                     let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) ;
                     let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
 
-                    this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
+                    this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding * 2);
                     canvasContext.fillStyle = waitColor;
                     canvasContext.fill();
                     canvasContext.font = fontHeader;
