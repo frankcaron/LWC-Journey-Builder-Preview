@@ -565,6 +565,7 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         const eventEntryColor = '#97cf66';
         const activityEntryColor = '#52c7bc';
         const activityColor = '#52c7bc';
+        const waitColor = '#ccc';
         const decisionColor = '#ec8b23';
         const splitColor = '#ec8b23'; //'#97a4b1';
         const restColor = '#2671B9';
@@ -777,6 +778,57 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
                         //Iterate
                         branchRightCounter++;
 
+                } else if (currentActivityType.toLowerCase().includes("wait")) {
+                    // Debug
+                    //console.log("Drawing normal activity for " + currentActivity.name);
+
+                    // Draw Activity
+                    let nextEventX = left + shapeSize + (shapeSpacing * branchRightCounter) ;
+                    let nextEventY = (top + shapeSize) / 2 + (shapeSpacing + descriptionHeight) * branchDownCounter;  
+
+                    this.roundRect(canvasContext, nextEventX, nextEventY, shapeSize, shapeSize, shapeRounding);
+                    canvasContext.fillStyle = waitColor;
+                    canvasContext.fill();
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.fillText("Wait", nextEventX + shapeSize / 2, nextEventY + shapeSize / 2 + fontMarginTop);
+
+
+                    //Draw Entry Event Box
+                    let endpointEventDescriptionX = nextEventX - descriptionWidth / 5;
+                    let endpointEventDescriptionY = nextEventY + descriptionHeight / 1.2 + descriptionPadding;
+
+                    canvasContext.beginPath();
+                    canvasContext.rect(endpointEventDescriptionX, endpointEventDescriptionY, descriptionWidth, descriptionHeight);
+                    canvasContext.closePath();
+                    canvasContext.fillStyle = descriptionFillColor;
+                    canvasContext.fill();
+                    //canvasContext.lineWidth = 1;
+                    //canvasContext.strokeStyle = descriptionBorderColor;
+                    //canvasContext.stroke();
+
+                    //Draw Entry Event Text
+                    let endpointEventDescriptionTextX = nextEventX + descriptionWidth / 3;
+                    let endpointEventDescrtipionTextY = nextEventY + descriptionLineHeight + shapeSize + descriptionPadding * 6;
+
+                    canvasContext.fillStyle = fontColor;
+                    canvasContext.textAlign = "center";
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Name:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.key, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight, descriptionWidth, descriptionLineHeight);
+                    canvasContext.font = fontHeader;
+                    canvasContext.fillText("Description:", endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 3);
+                    canvasContext.font = fontBody;
+                    this.wrapText(canvasContext, currentActivity.name, endpointEventDescriptionTextX, endpointEventDescrtipionTextY + descriptionLineHeight * 4, descriptionWidth, descriptionLineHeight);
+
+                    //Add to list
+                    eventList.set(currentActivity.key, {"x": nextEventX, "y": nextEventY});
+
+                    //Iterate
+                    branchRightCounter++;
+                
                 } else {
 
                     // Debug
