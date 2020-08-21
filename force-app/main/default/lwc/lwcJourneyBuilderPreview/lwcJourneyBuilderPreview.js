@@ -538,8 +538,8 @@ export default class LwcJourneyBuilderPreview extends NavigationMixin(LightningE
         }
 
         //Debug
-        //console.log("All final draw paths");
-        //console.log(drawPaths);
+        console.log("All final draw paths");
+        console.log(drawPaths);
 
         //----------------------
         //Start Drawing
